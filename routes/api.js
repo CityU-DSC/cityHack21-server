@@ -4,7 +4,7 @@ const user = require('./user');
 routes.use('/user', user);
 
 routes.get('/', (req, res) => {
-    res.status(200).json({message: 'connected'});
+    res.status(200).json({message: 'connected to api'});
 });
 
 module.exports = routes;

@@ -1,4 +1,5 @@
 const User = require("../model/User");
+const _= require('lodash');
 
 exports.registerNewUser = async (req, res) => {
     try {
@@ -40,3 +41,10 @@ exports.loginUser = async (req, res) => {
 exports.getUserDetails = async (req, res) => {
     await res.json(req.userData);
 };
+
+exports.listAllUsers = async (req, res) => {
+    User.find({}, function(err, users) {
+        users = users.map(user => user = _.pick(user, ['name', 'email']));
+        res.status(200).json(users);
+    });
+}
