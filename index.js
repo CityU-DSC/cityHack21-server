@@ -5,6 +5,7 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const config = require("./config/db");
+const path = require('path');
 
 const routes = require('./routes/api');
 const admin_routes = require('./routes/admin_api');
@@ -28,9 +29,9 @@ app.use(bodyParser.json());
 
 app.use(morgan("dev"));
 
+app.use('/', express.static(path.join(__dirname, "../cityhack21/dist")));
 app.use('/admin', admin_routes);
 app.use('/', routes);
-
 
 app.listen(PORT, () => {
     console.log(`App is listening on ${PORT}`);
