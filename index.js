@@ -29,9 +29,11 @@ app.use(bodyParser.json());
 
 app.use(morgan("dev"));
 
-app.use('/', express.static(path.join(__dirname, "../cityhack21/dist")));
-app.use('/admin', admin_routes);
-app.use('/', routes);
+
+app.use('/api/admin', admin_routes);
+app.use('/api', routes);
+app.use(express.static(path.join(__dirname, "../cityhack21/dist")));
+app.use('*', express.static(path.join(__dirname, "../cityhack21/dist")));
 
 app.listen(PORT, () => {
     console.log(`App is listening on ${PORT}`);

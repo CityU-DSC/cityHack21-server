@@ -44,7 +44,8 @@ exports.getUserDetails = async (req, res) => {
 
 exports.listAllUsers = async (req, res) => {
     User.find({}, function(err, users) {
-        users = users.map(user => user = _.pick(user, ['name', 'email']));
+        users = users.map(user => _.pick(user, ['_id', 'name', 'email', 'created_at', 'updated_at']));
+        console.log("USERS>>>", users)
         res.status(200).json(users);
     });
 }

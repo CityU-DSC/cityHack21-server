@@ -21,11 +21,16 @@ const userSchema = mongoose.Schema({
                 required: true
             }
         }
-    ]
+    ],
+    created_at: {type: Date, default: Date.now},
+    updated_at: {type: Date, default: Date.now}
 });
 
 userSchema.pre("save", async function(next) {
     // Hash the password before saving the user model
+    now = new Date();
+    this.updated_at = now;
+    if(!this.created_at) this.created_at = now;
     const user = this;
     if (user.isModified("password")) {
         user.password = await bcrypt.hash(user.password, 8);
@@ -48,7 +53,6 @@ userSchema.methods.generateAuthToken = async function() {
 //this method search for a user by email and password.
 userSchema.statics.findByCredentials = async (email, password) => {
     const user = await User.findOne({ email });
-    console.log(user);
     if (!user) {
         throw new Error({ error: "Invalid login details" });
     }
