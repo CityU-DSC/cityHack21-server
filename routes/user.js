@@ -7,6 +7,10 @@ user.post("/register", userController.registerNewUser);
 user.post("/login", userController.loginUser);
 user.get("/me", auth, userController.getUserDetails);
 
+user.get('/reverifyEmail', userController.sendVerificaitonAgain);
+user.post('/verifyEmail', userController.verifyUser);
+
+
 
 // Admin Api
 user.get('/listAllUsers', userController.listAllUsers);

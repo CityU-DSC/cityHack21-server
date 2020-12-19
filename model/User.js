@@ -1,14 +1,22 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const crypto = require('crypto');
+
+const emailController = require('./emailController');
+
 const userSchema = mongoose.Schema({
     name: {
         type: String,
-        required: [true, "Please Include your name"]
+        required: [true, "Please Include your name"],
+        unqiue: true,
+        index: true
     },
     email: {
         type: String,
-        required: [true, "Please Include your email"]
+        required: [true, "Please Include your email"],
+        unqiue: true,
+        index: true
     },
     password: {
         type: String,
@@ -22,6 +30,13 @@ const userSchema = mongoose.Schema({
             }
         }
     ],
+    verified: {
+        type: Boolean,
+        default: false
+    },
+    verificationToken: {
+        type: String,
+    },
     created_at: {type: Date, default: Date.now},
     updated_at: {type: Date, default: Date.now}
 });
@@ -62,6 +77,27 @@ userSchema.statics.findByCredentials = async (email, password) => {
     }
     return user;
 };
+
+
+
+userSchema.methods.generateVerificationEmail = async function() {
+    const user = this;
+
+    const generateCode = () => {
+        return crypto.randomBytes(3).toString('hex').toUpperCase();
+    }
+
+    user.verificationToken = generateCode();
+
+    await emailController.sendRegistrationEmail(
+        user.email, 
+        user.name, 
+        user.verificationToken
+    );
+
+    await user.save();
+
+}
 
 const User = mongoose.model("User", userSchema);
 module.exports = User;
