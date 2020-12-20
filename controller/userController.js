@@ -4,29 +4,40 @@ const _ = require('lodash');
 
 exports.registerNewUser = async (req, res) => {
     try {
-        const { name, email, password } = req.body;
+        const { nickName, 
+            accountId, firstName, lastName,
+            university, majorProgram, year,
+            sid, number, schoolEmail, personalEmail,
+            avatarUrl, password
+        } = req.body;
 
-        const user = new User({
-            name, email, password
+        const user = new User({ 
+            nickName, accountId, 
+            firstName, lastName, university, 
+            majorProgram, year, sid, 
+            number, schoolEmail, email: personalEmail,
+            avatarUrl, password
         });
         try {
             await user.save();
         } catch (err){
-            console.error(err);
+            console.log(err);
+            let errorMessage;
+            if (err.code == 11000) {
+                errorMessage = "Email or AccountId not provided or has already exist."
+            } else {
+                errorMessage = "Unknown error."
+            }
             return res.status(409).json({
-                message: "email already in use",
+                message: errorMessage,
                 err: err
             });
         }
         
         await user.generateVerificationEmail();
-
-        delete user.verificationToken;
-        delete user.password;
-        delete user.tokens;
-
-        res.status(201).json({ user, token });
+        res.status(201).json({ user: user });
     } catch (err) {
+        console.log(err);
         res.status(400).json({ err: err });
     }
 };
@@ -48,6 +59,7 @@ exports.loginUser = async (req, res) =>
         res.status(201).json({ user, token });
     } catch (err)
     {
+        console.log(err)
         res.status(400).json({ err: err });
     }
 };
@@ -60,7 +72,7 @@ exports.listAllUsers = async (req, res) =>
 {
     User.find({}, function (err, users)
     {
-        users = users.map(user => _.pick(user, ['_id', 'name', 'email', 'created_at', 'updated_at']));
+        users = users.map(user => _.pick(user, ['_id', 'accountId', 'email', 'created_at', 'updated_at']));
         console.log("USERS>>>", users)
         res.status(200).json(users);
     });
@@ -68,9 +80,10 @@ exports.listAllUsers = async (req, res) =>
 
 exports.verifyUser = async (req, res) => {
     try {
-        const { verificationToken, name } = req.body;
+        console.log(req.body);
+        const { verificationCode, email } = req.body;
 
-        const user = await User.findOne(name, verificationToken);
+        const user = await User.findOne({ email, verificationToken: verificationCode });
         if (!user) {
             return res.status(401).json({ 
                 message: "Wrong verification code." })
@@ -81,9 +94,7 @@ exports.verifyUser = async (req, res) => {
         user.verified = true;
         await user.save();
         
-        delete userData.password;
-
-        return res.status(200).json({ userData, token });
+        return res.status(200).json({ user, token });
     } catch (err) {
         return res.status(400).json({ err: err });
     }
@@ -91,9 +102,9 @@ exports.verifyUser = async (req, res) => {
 
 exports.sendVerificaitonAgain = async (req, res) => {
     try {
-        const { name } = req.body;
+        const { email } = req.body;
 
-        const user = await User.findOne(name);
+        const user = await User.findOne({ email });
         
         if (!user.verified){
             await user.generateVerificationEmail();

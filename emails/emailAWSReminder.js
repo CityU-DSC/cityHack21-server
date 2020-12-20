@@ -1,9 +1,23 @@
-const crypto = require('crypto');
+const dateUtil = require('../util/dateUtil');
+
+const informEmailDays = date_of_registeration => {
+	let currentDate = new Date();
+	date_of_registeration = new Date(date_of_registeration);
+
+	let days = dateUtil.dateToDay(dateUtil.hackathonDate) - dateUtil.dateToDay(currentDate);
+	let daysAfterRegisteration = dateUtil.dateToDay(currentDate) - dateUtil.dateToDay(date_of_registeration);
+
+	if (currentDate > new Date('2021-01-20') && !(daysAfterRegisteration <= 3)){
+		return `<mark class="highlight-yellow">${dateUtil.daysToString(days)}</mark> until <a href="https://cityhack21.com">CityHack21</a>! Hope that you have formed your team and `
+	} else {
+		days = daysAfterRegisteration;
+		return `It has been <mark class="highlight-yellow">${dateUtil.daysToString(days)}</mark> after your registration of <a href="https://cityhack21.com">CityHack21</a>! Hope that you`
+	}
+}
 
 
-
-const emailTemplate = (username, registerationCode) => `
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>Untitled</title><style>
+const emailTemplate = (username, days) => `
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>CityHack AWS Educate Reminder Template</title><style>
 /* webkit printing magic: print all background colors */
 html {
 	-webkit-print-color-adjust: exact;
@@ -364,8 +378,8 @@ input[type="checkbox"] {
 }
 
 p {
-	margin-top: 0.5em;
-	margin-bottom: 0.5em;
+	margin-top: 0.7em;
+	margin-bottom: 0.7em;
 }
 
 .image {
@@ -629,14 +643,26 @@ blockquote {
 	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20x%3D%220.75%22%20y%3D%220.75%22%20width%3D%2214.5%22%20height%3D%2214.5%22%20fill%3D%22white%22%20stroke%3D%22%2336352F%22%20stroke-width%3D%221.5%22%2F%3E%0A%3C%2Fsvg%3E");
 }
 	
-</style></head><body><article class="page"><header><h1 class="page-title"></h1></header><div class="page-body"><img style="width:150px;" src="cid:logo" /><p class="">
-</p><h3 class="">Hello ${username},</h3><p></p><p class="">Welcome to <a href="https://cityhack21.com">CityHack21</a>!
-<p></p><p class="">This is your verification code:</p><p style="padding-left:10px; font-size:1.5rem">${registerationCode.join(' ')}</p><p class="">
-Hope you have a wonderful day! 🥳</p><p></p><p class="">Best,<p></p>CityHack21 Organizing Team.</p><p></p><p class="">
-</p><br><p class=""><em><mark class="highlight-gray">*  Feel free to email to <a href="cityhack21@gmail.com">cityhack21@gmail.com</a> if you have any problems.</mark></em></p><img style="width:100px;" src="cid:dog"/></div></article></body></html>
-`
+</style></head><body>
+<article class="page mono" style="margin-left:20px">
+	<div class="page-body">
+		<img style="width:150px;" src="cid:logo" />
+		<h3 style="margin-bottom: 10px;">Hello ${username},</h3>
+		<p>We noticed that you have not submitted your <strong>proof of AWS Educate Registration</strong>. </p>
+		<p>${informEmailDays(days)} have <strong>successfully registered for </strong><a href="https://www.awseducate.com/Registration?promoCode=CityHack2021"><strong>AWS Educate</strong></a>.
+		</p>
+		<p>Be reminded to submit your AWS Educate registration proof to get wonderful<strong><mark class="highlight-red"> souvenirs from AWS</mark></strong> and <mark class="highlight-red"><strong>free AWS Credit</strong></mark>!</p>
+		<p style="padding-left:10px; font-size:1.1rem; margin-bottom: 20px;"><mark class="highlight-red"><a href="https://cityhack21.com/personal/verification">AWS Educate Registration Submission Link</a></mark></p>
+		<p>Hope you have a wonderful day! 🥳</p>
+		<p>Best,</p>
+		<p>CityHack21 Organizing Team.</p>
+		<p><em><mark class="highlight-gray">*  Feel free to email to <a href="mailto:cityhack21@gmail.com">cityhack21@gmail.com</a> if you have any problems.</mark></em></p>
+		<img style="width:100px;" src="cid:dog"/>
+	</div>
+</article>
+</body></html>`
 
-const emailTitle = '#CityHack21 - Confirmation 👋';
+const emailTitle = '#CityHack21 - AWS Educate Registration Proof';
 
 const emailAttachment = [
 	{
@@ -646,7 +672,7 @@ const emailAttachment = [
 	},
 	{
 		filename: 'Dog.gif',
-		path: 'https://firebasestorage.googleapis.com/v0/b/cityhack21-6404b.appspot.com/o/email_images%2Fd1.gif?alt=media',
+		path: 'https://firebasestorage.googleapis.com/v0/b/cityhack21-6404b.appspot.com/o/email_images%2Fd3.gif?alt=media',
 		cid: 'dog' //my mistake was putting "cid:logo@cid" here! 
 	}
 ]

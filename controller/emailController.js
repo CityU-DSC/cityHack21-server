@@ -21,8 +21,8 @@ const transporterCredentials = {
 	}
 }
 const sender = 'cityhack21.com';
-const defaultRecievers = ['lowzhao.com'];
-const cc = ['lowzhao.com'];
+const defaultRecievers = ['lowzhao@gmail.com'];
+const cc = ['lowzhao@gmail.com'];
 
 
 async function sendEmail(
@@ -50,6 +50,7 @@ async function sendEmail(
 }
 
 const emailReg = require('../emails/emailRegister');
+const emailAWSReminder = require('../emails/emailAWSReminder');
 
 // sendEmail(
 // 	['lowzhao@gmail.com'],
@@ -61,9 +62,9 @@ const emailReg = require('../emails/emailRegister');
 // )
 
 
-const sendRegistrationEmail = async (emailAddress, name, verificationToken) => {
+const sendRegistrationEmail = async (emailAddresses, name, verificationToken) => {
 	await sendEmail(
-		[emailAddress],
+		emailAddresses,
 		emailReg.emailTitle,
 		emailReg.emailTemplate(
 			name,
@@ -74,8 +75,21 @@ const sendRegistrationEmail = async (emailAddress, name, verificationToken) => {
 }
 
 
+const sendAWSReminderEmail = async (emailAddresses, name, date_of_registeration) => {
+	await sendEmail(
+		emailAddresses,
+		emailAWSReminder.emailTitle,
+		emailAWSReminder.emailTemplate(
+			name,
+			date_of_registeration
+		),
+		emailAWSReminder.emailAttachment
+	);
+}
+
 
 module.exports = {
 	sendEmail,
-	sendRegistrationEmail
+	sendRegistrationEmail,
+	sendAWSReminderEmail
 }

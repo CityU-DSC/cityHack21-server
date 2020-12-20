@@ -20,6 +20,7 @@
     "lodash": "^4.17.20",
     "mongoose": "^5.10.14",
     "morgan": "^1.10.0",
+    "node-cron": "^2.0.3",
     "nodemailer": "^6.4.16",
     "nodemon": "^2.0.6"
   }

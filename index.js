@@ -12,6 +12,8 @@ const admin_routes = require('./routes/admin_api');
 
 const app = express();
 
+const cronJobs = require('./util/cron');
+
 //configure database and mongoose
 mongoose.set("useCreateIndex", true);
 mongoose
@@ -38,3 +40,5 @@ app.use('*', express.static(path.join(__dirname, "../cityhack21/dist")));
 app.listen(PORT, () => {
     console.log(`App is listening on ${PORT}`);
 });
+
+cronJobs.startCrons();
