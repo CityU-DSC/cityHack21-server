@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require("express");
 const PORT = process.env.PORT || 3000;
 const morgan = require("morgan");
@@ -13,6 +15,11 @@ const admin_routes = require('./routes/admin_api');
 const app = express();
 
 const cronJobs = require('./util/cron');
+
+console.log(process.env.ch21_accessToken);
+console.log(process.env.ch21_refreshToken);
+console.log(process.env.ch21_clientSecret);
+console.log(process.env.ch21_clientId);
 
 //configure database and mongoose
 mongoose.set("useCreateIndex", true);
