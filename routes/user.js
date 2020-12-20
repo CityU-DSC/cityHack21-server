@@ -10,6 +10,8 @@ user.get("/me", auth, userController.getUserDetails);
 user.get('/reverifyEmail', userController.sendVerificaitonAgain);
 user.post('/verifyEmail', userController.verifyUser);
 
+user.post('/createAWSVerification', auth, userController.createAWSVerification)
+
 
 
 // Admin Api
