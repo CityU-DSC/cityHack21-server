@@ -1,5 +1,6 @@
 const User = require("../model/User");
 const _ = require('lodash');
+const AWSVerification = require("../model/AWSVerification");
 
 
 exports.registerNewUser = async (req, res) => {
@@ -114,6 +115,25 @@ exports.sendVerificaitonAgain = async (req, res) => {
             });
         }
         
+    } catch (err) {
+        return res.status(400).json({ err });
+    }
+}
+
+
+
+// == AWS Vertfication == 
+exports.createAWSVerification = async (req, res) => {
+    try {
+        const { imgURL } = req.body;
+
+        const awsVerification = new AWSVerification();
+        awsVerification.imgURL = imgURL;
+        awsVerification.userId = req.userData._id;
+
+        await awsVerification.save();
+
+        const user = await AWSVerification.findOne({ imgURL });
     } catch (err) {
         return res.status(400).json({ err });
     }
