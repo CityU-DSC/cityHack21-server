@@ -9,7 +9,7 @@ exports.registerNewUser = async (req, res) => {
             accountId, firstName, lastName,
             university, majorProgram, year,
             sid, number, schoolEmail, personalEmail,
-            avatarUrl, password
+            avatarUrl, password, about, hasAWSAccount, needAWSExtraCredit
         } = req.body;
 
         const user = new User({ 
@@ -17,7 +17,7 @@ exports.registerNewUser = async (req, res) => {
             firstName, lastName, university, 
             majorProgram, year, sid, 
             number, email: schoolEmail, personalEmail,
-            avatarUrl, password
+            avatarUrl, password, about, hasAWSAccount, needAWSExtraCredit
         });
         try {
             await user.save();
@@ -80,7 +80,12 @@ exports.updateUserDetails = async (req, res) => {
     let body = _.clone(req.body);
     body = _.pick(body, ["nickName", "accountId", "firstName", "lastName",
         "university", "majorProgram", "year", "sid", "number", 
-        "personalEmail", "avatarUrl", "hasAWSAccount", "needAWSExtraCredit"]);
+        "personalEmail", "avatarUrl", "hasAWSAccount", "needAWSExtraCredit", "about", "academicYear",
+        "phoneNumber"
+    ]);
+
+    body.year = body.academicYear;
+    body.number = body.phoneNumber;
 
     if (!req.userData){
         return res.status(400).json(

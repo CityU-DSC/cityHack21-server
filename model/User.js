@@ -88,6 +88,7 @@ const userSchema = mongoose.Schema({
         type: Boolean,
         default: false
     },
+    about: String,
     // needAtlas: {
     //     type: Boolean,
     //     default: false
