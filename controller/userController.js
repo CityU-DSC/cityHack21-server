@@ -9,15 +9,17 @@ exports.registerNewUser = async (req, res) => {
             accountId, firstName, lastName,
             university, majorProgram, year,
             sid, number, schoolEmail, personalEmail,
-            avatarUrl, password, about, hasAWSAccount, needAWSExtraCredit
+            avatarUrl, password, about, 
+            hasAWSAccount, needAWSExtraCredit, awsEducateReason
         } = req.body;
 
         const user = new User({ 
             nickName, accountId, 
             firstName, lastName, university, 
             majorProgram, year, sid, 
-            number, email: schoolEmail, personalEmail,
-            avatarUrl, password, about, hasAWSAccount, needAWSExtraCredit
+            number, schoolEmail, email: personalEmail,
+            avatarUrl, password, about, 
+            hasAWSAccount, needAWSExtraCredit, awsEducateReason
         });
         try {
             await user.save();
@@ -80,8 +82,8 @@ exports.updateUserDetails = async (req, res) => {
     let body = _.clone(req.body);
     body = _.pick(body, ["nickName", "accountId", "firstName", "lastName",
         "university", "majorProgram", "year", "sid", "number", 
-        "personalEmail", "avatarUrl", "hasAWSAccount", "needAWSExtraCredit", "about", "academicYear",
-        "phoneNumber"
+        "schoolEmail", "avatarUrl", "hasAWSAccount", "needAWSExtraCredit", "about", "academicYear",
+        "phoneNumber", "awsEducateReason"
     ]);
 
     body.year = body.academicYear;

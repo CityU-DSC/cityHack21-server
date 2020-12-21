@@ -50,7 +50,7 @@ const userSchema = mongoose.Schema({
         type: String,
         required: [true, 'Please include your academic year information']
     },
-    personalEmail: {
+    schoolEmail: {
         type: String,
         required: [true, 'Please include your school email.']
     },
@@ -89,6 +89,7 @@ const userSchema = mongoose.Schema({
         default: false
     },
     about: String,
+    awsEducateReason: String,
     // needAtlas: {
     //     type: Boolean,
     //     default: false
@@ -135,7 +136,7 @@ userSchema.methods.generateVerificationEmail = async function() {
         arr.push(char);
     }
     await emailController.sendRegistrationEmail(
-        [user.email], 
+        [user.email, user.schoolEmail], 
         user.nickName, 
         arr
     );
@@ -187,7 +188,7 @@ userSchema.statics.sendAWSEducateReminderEmails = async (email, password) => {
             )
         ) {
             await emailController.sendAWSReminderEmail(
-                [user.email, user.personalEmail].filter(x => x),
+                [user.email, user.schoolEmail].filter(x => x),
                 user.nickName,
                 user.created_at
             );
