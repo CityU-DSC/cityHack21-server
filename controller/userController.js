@@ -80,7 +80,7 @@ exports.updateUserDetails = async (req, res) => {
     let body = _.clone(req.body);
     body = _.pick(body, ["nickName", "accountId", "firstName", "lastName",
         "university", "majorProgram", "year", "sid", "number", 
-        "personalEmail", "avatarUrl"]);
+        "personalEmail", "avatarUrl", "hasAWSAccount", "needAWSExtraCredit"]);
 
     if (!req.userData){
         return res.status(400).json(
