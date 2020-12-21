@@ -85,9 +85,12 @@ exports.updateUserDetails = async (req, res) => {
         "schoolEmail", "avatarUrl", "hasAWSAccount", "needAWSExtraCredit", "about", "academicYear",
         "phoneNumber", "awsEducateReason"
     ]);
-
-    body.year = body.academicYear;
-    body.number = body.phoneNumber;
+    if (body.academicYear){
+        body.year = body.academicYear;
+    } 
+    if (body.phoneNumber){
+        body.number = body.phoneNumber;
+    }
 
     if (!req.userData){
         return res.status(400).json(
