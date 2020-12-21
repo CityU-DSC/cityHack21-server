@@ -16,7 +16,7 @@ exports.registerNewUser = async (req, res) => {
             nickName, accountId, 
             firstName, lastName, university, 
             majorProgram, year, sid, 
-            number, schoolEmail, email: personalEmail,
+            number, email: schoolEmail, personalEmail,
             avatarUrl, password
         });
         try {
@@ -56,6 +56,12 @@ exports.loginUser = async (req, res) =>
                 .status(401)
                 .json({ error: "Login failed! Check authentication credentials" });
         }
+        if (!user.verified){
+            return res 
+                .status(401)
+                .json({ error: "This email is registered but not verified, please verify it.", reverify: true})
+        }
+
         const token = await user.generateAuthToken();
         res.status(201).json({ user, token });
     } catch (err)
@@ -66,7 +72,37 @@ exports.loginUser = async (req, res) =>
 };
 exports.getUserDetails = async (req, res) =>
 {
-    await res.json(req.userData);
+    const user = await User.findById(req.userData._id);
+    return res.status(200).json(user);
+};
+
+exports.updateUserDetails = async (req, res) => {
+    let body = _.clone(req.body);
+    body = _.pick(body, ["nickName", "accountId", "firstName", "lastName",
+        "university", "majorProgram", "year", "sid", "number", 
+        "personalEmail", "avatarUrl"]);
+
+    if (!req.userData){
+        return res.status(400).json(
+            {
+                success: true,
+                error: "Not logged in"
+            }
+        )
+    }
+
+    const user = await User.findByIdAndUpdate(req.userData._id, body);
+
+    if (!user) {
+        return res.status(404).json(
+            {
+                success: true,
+                error: "User not exist"
+            }
+        )
+    }
+    return res.status(200).json({success: true});
+
 };
 
 exports.listAllUsers = async (req, res) =>
@@ -106,14 +142,22 @@ exports.sendVerificaitonAgain = async (req, res) => {
         const { email } = req.body;
 
         const user = await User.findOne({ email });
-        
-        if (!user.verified){
+        if (!user){
+            return res.status(401).json({
+                success: false,
+                error: "No such user"
+            });
+        } else if (!user.verified){
             await user.generateVerificationEmail();
         } else {
             return res.status(401).json({
+                success: false,
                 error: "User have verified"
             });
         }
+        return res.status(200).json({
+            success: true
+        })
         
     } catch (err) {
         return res.status(400).json({ err });
@@ -125,6 +169,7 @@ exports.sendVerificaitonAgain = async (req, res) => {
 // == AWS Vertfication == 
 exports.createAWSVerification = async (req, res) => {
     try {
+
         const { imgURL } = req.body;
 
         const awsVerification = new AWSVerification();
@@ -133,8 +178,33 @@ exports.createAWSVerification = async (req, res) => {
 
         await awsVerification.save();
 
-        const user = await AWSVerification.findOne({ imgURL });
+        // const user = await AWSVerification.findOne({ imgURL });
+
+        return res.status(200).json({
+            success: true,
+            message: "successfully updated"
+        });
+
     } catch (err) {
         return res.status(400).json({ err });
+    }
+}
+
+exports.isAWSVerified = async (req, res) => {
+    const awsVerification = await AWSVerification.find({
+        userId: req.userData._id
+    }).sort({'created_at': -1});
+
+    if (!awsVerification) {
+        return res.status(200).json({
+            success: true,
+            status: "not submitted"
+        })
+    } else {
+        return res.status(200).json({
+            success: true,
+            status: awsVerification[-1].status,
+            imgURL: awsVerification[-1].imgURL
+        });
     }
 }

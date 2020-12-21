@@ -8,8 +8,8 @@ const AWSVerificationSchema = mongoose.Schema({
         required: [true, "Please include user id"]
     },
     
-    verificationState: {
-        type: String, // pending | confirmed, reject
+    status: {
+        type: String, // pending | success | reject
         default: "pending"
     },
 

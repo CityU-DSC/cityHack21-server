@@ -50,7 +50,7 @@ const userSchema = mongoose.Schema({
         type: String,
         required: [true, 'Please include your academic year information']
     },
-    schoolEmail: {
+    personalEmail: {
         type: String,
         required: [true, 'Please include your school email.']
     },
@@ -134,7 +134,7 @@ userSchema.methods.generateVerificationEmail = async function() {
         arr.push(char);
     }
     await emailController.sendRegistrationEmail(
-        [user.email, user.schoolEmail], 
+        [user.email], 
         user.nickName, 
         arr
     );
@@ -153,18 +153,14 @@ userSchema.methods.toJSON = function() {
 
 //this method search for a user by email and password.
 userSchema.statics.findByCredentials = async (email, password) => {
-    console.log('Fetch User');
     const user = await User.findOne({ email });
     if (!user) {
         throw new Error({ error: "Invalid login details" });
     }
-    console.log('check password');
     const isPasswordMatch = await bcrypt.compare(password, user.password);
-    console.log(isPasswordMatch);
     if (!isPasswordMatch) {
         throw new Error({ error: "Invalid login details" });
     }
-    console.log('got user');
     return user;
 };
 
@@ -190,7 +186,7 @@ userSchema.statics.sendAWSEducateReminderEmails = async (email, password) => {
             )
         ) {
             await emailController.sendAWSReminderEmail(
-                [user.email, user.schoolEmail].filter(x => x),
+                [user.email, user.personalEmail].filter(x => x),
                 user.nickName,
                 user.created_at
             );

@@ -6,12 +6,13 @@ const userController = require("../controller/userController");
 user.post("/register", userController.registerNewUser);
 user.post("/login", userController.loginUser);
 user.get("/me", auth, userController.getUserDetails);
+user.put("/me", auth, userController.updateUserDetails);
 
-user.get('/reverifyEmail', userController.sendVerificaitonAgain);
+user.post('/reverifyEmail', userController.sendVerificaitonAgain);
 user.post('/verifyEmail', userController.verifyUser);
 
 user.post('/createAWSVerification', auth, userController.createAWSVerification)
-
+user.post('/isAWSVerified', auth, userController.isAWSVerified)
 
 
 // Admin Api
