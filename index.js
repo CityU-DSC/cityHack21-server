@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require("express");
 const PORT = process.env.PORT || 3000;
 const morgan = require("morgan");
@@ -12,6 +14,8 @@ const admin_routes = require('./routes/admin_api');
 
 const app = express();
 
+const cronJobs = require('./util/cron');
+
 //configure database and mongoose
 mongoose.set("useCreateIndex", true);
 mongoose
@@ -24,15 +28,25 @@ mongoose
     });
 
 app.use(cors());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
 
+// app.use(bodyParser.urlencoded({
+//     parameterLimit: 100000,
+//     limit: '50mb',
+//     extended: true
+// }));
+// app.use(bodyParser.json());
+app.use(bodyParser.json({limit: '50mb'}));
+app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 app.use(morgan("dev"));
 
-app.use('/', express.static(path.join(__dirname, "../cityhack21/dist")));
-app.use('/admin', admin_routes);
-app.use('/', routes);
+
+app.use('/api/admin', admin_routes);
+app.use('/api', routes);
+app.use(express.static(path.join(__dirname, "../cityhack21/dist")));
+app.use('*', express.static(path.join(__dirname, "../cityhack21/dist")));
 
 app.listen(PORT, () => {
     console.log(`App is listening on ${PORT}`);
 });
+
+cronJobs.startCrons();
