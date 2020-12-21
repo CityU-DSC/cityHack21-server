@@ -13,9 +13,9 @@ const AWSVerificationSchema = mongoose.Schema({
         default: "pending"
     },
 
-    imageURL: {
+    imageUrl: {
         type: String,
-        required: [true, "Please include imageURL"]
+        required: [true, "Please include imageUrl"]
     },
 
     // adminId: {}

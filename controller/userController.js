@@ -180,10 +180,10 @@ exports.sendVerificaitonAgain = async (req, res) => {
 exports.createAWSVerification = async (req, res) => {
     try {
 
-        const { imgURL } = req.body;
+        const { imageUrl } = req.body;
 
         const awsVerification = new AWSVerification();
-        awsVerification.imgURL = imgURL;
+        awsVerification.imageUrl = imageUrl;
         awsVerification.userId = req.userData._id;
 
         await awsVerification.save();
@@ -204,8 +204,7 @@ exports.isAWSVerified = async (req, res) => {
     const awsVerification = await AWSVerification.find({
         userId: req.userData._id
     }).sort({'created_at': -1});
-
-    if (!awsVerification) {
+    if (!awsVerification.length) {
         return res.status(200).json({
             success: true,
             status: "not submitted"
@@ -213,8 +212,8 @@ exports.isAWSVerified = async (req, res) => {
     } else {
         return res.status(200).json({
             success: true,
-            status: awsVerification[-1].status,
-            imgURL: awsVerification[-1].imgURL
+            status: awsVerification[0].status,
+            imgURL: awsVerification[0].imgURL
         });
     }
 }

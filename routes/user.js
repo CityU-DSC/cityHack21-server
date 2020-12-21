@@ -12,7 +12,7 @@ user.post('/reverifyEmail', userController.sendVerificaitonAgain);
 user.post('/verifyEmail', userController.verifyUser);
 
 user.post('/createAWSVerification', auth, userController.createAWSVerification)
-user.post('/isAWSVerified', auth, userController.isAWSVerified)
+user.get('/isAWSVerified', auth, userController.isAWSVerified)
 
 
 // Admin Api
