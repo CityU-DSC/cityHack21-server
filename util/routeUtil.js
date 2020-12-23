@@ -18,7 +18,7 @@ function requestHandler(executionFunction) {
             } else {
                 console.log(err);
             }
-            return res.status(response.status? response.status: 400).json({
+            return res.status(err.status? err.status: 400).json({
                 success: false,
                 error: err,
                 message: err.message
