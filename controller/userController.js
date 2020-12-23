@@ -33,7 +33,8 @@ exports.registerNewUser = async (req, res) => {
             }
             return res.status(409).json({
                 message: errorMessage,
-                err: err
+                err: err,
+                emailUsed: !!err.keyPattern.email,
             });
         }
         
