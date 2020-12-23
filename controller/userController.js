@@ -33,7 +33,8 @@ exports.registerNewUser = async (req, res) => {
             }
             return res.status(409).json({
                 message: errorMessage,
-                err: err
+                err: err,
+                emailUsed: !!err.keyPattern.email,
             });
         }
         
@@ -72,6 +73,7 @@ exports.loginUser = async (req, res) =>
         res.status(400).json({ err: err });
     }
 };
+
 exports.getUserDetails = async (req, res) =>
 {
     const user = await User.findById(req.userData._id);
@@ -217,3 +219,16 @@ exports.isAWSVerified = async (req, res) => {
         });
     }
 }
+
+exports.emailUsed = async (req) => {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+    return { emailUsed: !!user };
+}
+
+exports.accountIdUsed = async (req) => {
+    const { accountId } = req.body;
+    const user = await User.findOne({ accountId });
+    return { accountIdUsed: !!user };
+}
+
