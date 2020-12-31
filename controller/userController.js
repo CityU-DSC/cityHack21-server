@@ -119,9 +119,19 @@ exports.updateUserDetails = async (req, res) => {
 
 exports.listAllUsers = async (req, res) =>
 {
-    User.find({}, function (err, users)
+    console.log("REQ>>>", req.query);
+    const searchQuery = _.pickBy(req.query,_.identity)
+    if (searchQuery.email){
+        searchQuery.$or = [{
+            email: searchQuery.email
+        }, {
+            schoolEmail: searchQuery.email}]
+        delete searchQuery.email
+    }
+
+    User.find({...searchQuery}, function (err, users)
     {
-        users = users.map(user => _.pick(user, ['_id', 'accountId', 'email', 'created_at', 'updated_at']));
+        // users = users.map(user => _.pick(user, ['_id', 'accountId', 'email', 'created_at', 'updated_at']));
         console.log("USERS>>>", users)
         res.status(200).json(users);
     });
