@@ -121,10 +121,10 @@ exports.listAllUsers = async (req, res) =>
 {
     User.find({}, function (err, users)
     {
-        users = users.map(user => _.pick(user, ['_id', 'accountId', 'email', 'created_at', 'updated_at']));
+        users = users.map(user => _.pick(user, ['_id', 'accountId', 'email', 'created_at', 'updated_at', 'team']));
         console.log("USERS>>>", users)
         res.status(200).json(users);
-    });
+    }).populate('team');
 }
 
 exports.verifyUser = async (req, res) => {

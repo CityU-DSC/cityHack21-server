@@ -1,23 +1,17 @@
 const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const crypto = require('crypto');
-
-const emailController = require('../controller/emailController');
-
-const dateUtil = require('../util/dateUtil');
-const { team } = require("console");
+const User = require("./User");
 
 const o = mongoose.Schema.Types.ObjectId;
 
 const teamSchema = mongoose.Schema({
-	name: { type: String, index: true },
-	topic: { type: String, enum: ['Atlas', 'SageMaker', 'AWS'], required: true, default: 'AWS' },
+	name: { type: String, unique: true, required: true },
+	topic: { type: String, enum: ['Atlas', 'SageMaker', 'Others'], required: true, default: 'Others' },
 	description: String,
 	members: [{ type: o, ref: 'User', index: true }],
-	leader: { required: true, type: o, ref: 'User' }, // accountId of user in member
+	leader: { required: true, type: o, ref: 'User', index: true }, // accountId of user in member
 	needPhysicalSpace: { type: Boolean, required: true, default: false },
-	privateTeam: { type: Boolean, required: true, default: false },
+	private: { type: Boolean, required: true, default: false },
+	teamCode: String,
 
 	deleted: { type: Boolean, required: true, default: false },
 	deletedAt: { type: Date },
@@ -37,6 +31,7 @@ teamSchema.pre("save", async function (next)
 	{
 		this.deleted = true;
 		this.deletedAt = Date.now();
+		this.name = this.name + '_' + Date.now().toString();
 	}
 
 	const membersInOtherTeam = await Team.findOne({
@@ -51,8 +46,10 @@ teamSchema.pre("save", async function (next)
 	});
 	if (membersInOtherTeam)
 	{
-		throw Error('Member is inside other teams')
+		throw Error('Member is in other teams')
 	}
+
+	await User.update({_id: {$in: this.members}}, {team: this._id});
 
 
 	let isLeaderAMember = this.members.length == 0;
@@ -68,6 +65,11 @@ teamSchema.pre("save", async function (next)
 		throw Error('Leader is not a member');
 	}
 
+
+	if (this.private && !this.teamCode){
+		throw Error("No team code when the team is private.");
+	}
+
 	next();
 });
 
@@ -80,13 +82,21 @@ teamSchema.pre("find", async function (next)
 		this.where({ deleted: false });
 	}
 
-	if (!('private' in this.getQuery()))
-	{
-		this.where({ private: false })
-	}
+	// if (!('private' in this.getQuery()))
+	// {
+	// 	this.where({ private: false })
+	// }
 
 	next();
 })
+
+
+teamSchema.methods.toJSON = async function() {
+    var obj = this.toObject();
+    delete obj.teamCode;
+    delete obj.__v;
+    return obj;
+}
 
 // //this function generates an auth token for the user
 // userSchema.methods.generateAuthToken = async function ()

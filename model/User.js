@@ -7,6 +7,9 @@ const emailController = require('../controller/emailController');
 
 const dateUtil = require('../util/dateUtil');
 
+const o = mongoose.Schema.Types.ObjectId;
+
+
 const userSchema = mongoose.Schema({
 
     accountId: {
@@ -94,6 +97,8 @@ const userSchema = mongoose.Schema({
     //     type: Boolean,
     //     default: false
     // }
+
+    team: {type: o, ref: "Team"},
 
     created_at: {type: Date, default: Date.now},
     updated_at: {type: Date, default: Date.now}
