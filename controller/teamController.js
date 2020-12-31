@@ -2,6 +2,7 @@ const _ = require('lodash');
 const Team = require('../model/Team');
 const User = require('../model/User');
 
+const crypto = require('crypto');
 
 
 exports.getAllTeam = async (req) =>
@@ -158,12 +159,32 @@ exports.editTeam = async req => {
     let body = _.clone(req.body);
     body = _.pick(body, ["name", "topic", "description", "leader", "needPhysicalSpace"]);
 
-    await Team.findOneAndUpdate(
+    try
+    {
+        await Team.findOneAndUpdate(
+            {
+                leader: myId
+            },
+            body
+        );
+    } catch (err)
+    {
+        let errorMessage;
+        if (err.code == 11000)
         {
-            leader: myId
-        },
-        body
-    );
+            errorMessage = "Name has already exist."
+            throw {
+                message: errorMessage,
+                status: 409,
+                nameUsed: !!err.keyPattern.name
+            }
+        } else
+        {
+            errorMessage = "Unknown error."
+            throw err
+        }
+
+    }
 }
 
 exports.getTeamCode = async req =>

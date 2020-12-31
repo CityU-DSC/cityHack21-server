@@ -97,6 +97,8 @@ const userSchema = mongoose.Schema({
     //     type: Boolean,
     //     default: false
     // }
+    referrer: {type: o, ref: "User"},
+    promoCode: { type: String },
 
     team: {type: o, ref: "Team"},
 
