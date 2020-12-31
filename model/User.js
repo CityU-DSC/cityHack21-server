@@ -97,8 +97,8 @@ const userSchema = mongoose.Schema({
     //     type: Boolean,
     //     default: false
     // }
-    referrer: {type: o, ref: "User"},
-    promoCode: { type: String },
+    referrer: {type: o, ref: "User", immutable: true},
+    promoCode: { type: String, immutable: true },
 
     team: {type: o, ref: "Team"},
 

@@ -10,8 +10,10 @@ exports.registerNewUser = async (req, res) => {
             university, majorProgram, year,
             sid, number, schoolEmail, personalEmail,
             avatarUrl, password, about, 
-            hasAWSAccount, needAWSExtraCredit, awsEducateReason
+            hasAWSAccount, needAWSExtraCredit, awsEducateReason, referrerAccountId, promoCode
         } = req.body;
+
+        const referrer = await User.findbyAccountId(referrerAccountId);
 
         const user = new User({ 
             nickName, accountId, 
@@ -19,7 +21,8 @@ exports.registerNewUser = async (req, res) => {
             majorProgram, year, sid, 
             number, schoolEmail, email: personalEmail,
             avatarUrl, password, about, 
-            hasAWSAccount, needAWSExtraCredit, awsEducateReason
+            hasAWSAccount, needAWSExtraCredit, awsEducateReason,
+            referrer, promoCode
         });
         try {
             await user.save();
