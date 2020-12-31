@@ -18,11 +18,12 @@ function requestHandler(executionFunction) {
             } else {
                 console.log(err);
             }
-            return res.status(err.status? err.status: 400).json({
+            res.status(err.status? err.status: 400).json({
                 success: false,
                 error: err,
                 message: err.message
             })
+            throw err;
 		}
 	}
 }

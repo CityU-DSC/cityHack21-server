@@ -196,6 +196,10 @@ userSchema.statics.sendAWSEducateReminderEmails = async (email, password) => {
     }
 }
 
+userSchema.methods.findByAccountId = (accountId) => {
+    return User.findOne({accountId});
+}
+
 const User = mongoose.model("User", userSchema);
 // User.collection.reIndex(async function(finished,c,d){
 //     console.log("finished re indexing")
