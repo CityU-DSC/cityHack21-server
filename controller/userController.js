@@ -88,7 +88,7 @@ exports.updateUserDetails = async (req, res) => {
     body = _.pick(body, ["nickName", "accountId", "firstName", "lastName",
         "university", "majorProgram", "year", "sid", "number", 
         "schoolEmail", "avatarUrl", "hasAWSAccount", "needAWSExtraCredit", "about", "academicYear",
-        "phoneNumber", "awsEducateReason"
+        "phoneNumber", "awsEducateReason", "referrerAccountId", "promoCode"
     ]);
     if (body.academicYear){
         body.year = body.academicYear;
