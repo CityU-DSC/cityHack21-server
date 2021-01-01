@@ -7,8 +7,8 @@ const crypto = require('crypto');
 
 exports.getAllTeam = async (req) =>
 {
-    const team = await Team.find().populate(['leader', 'members']);
-    return { team };
+    const teams = await Team.find().populate(['leader', 'members']);
+    return { teams };
 }
 
 exports.createTeam = async (req) =>
@@ -104,10 +104,12 @@ exports.searchTeam = async (req) =>
     query['topic'] = {
         $in: ['Others']
     }
-    if (useAtlas){
+    if (useAtlas)
+    {
         query['topic']['$in'].append('Atlas')
     }
-    if (useSagemaker){
+    if (useSagemaker)
+    {
         query['topic']['$in'].append('SageMake')
     }
 
@@ -132,17 +134,19 @@ exports.joinTeam = async req =>
     await team.save();
 }
 
-exports.toogleTeamPrivate = async req => {
+exports.toogleTeamPrivate = async req =>
+{
     const myId = req.userData._id;
 
-    const team = await Team.findOne({leader: myId});
+    const team = await Team.findOne({ leader: myId });
     if (!team)
     {
         throw Error('You are not in any team');
     }
     team.private = !team.private;
 
-    const generateCode = () => {
+    const generateCode = () =>
+    {
         return crypto.randomBytes(3).toString('hex').toUpperCase();
     }
     const code = generateCode();
@@ -152,7 +156,8 @@ exports.toogleTeamPrivate = async req => {
     return { teamCode: team.teamCode }
 }
 
-exports.editTeam = async req => {
+exports.editTeam = async req =>
+{
 
     const myId = req.userData._id;
 
@@ -197,4 +202,16 @@ exports.getTeamCode = async req =>
         throw Error('You are not in any team');
     }
     return { teamCode: team.teamCode }
+}
+
+exports.getMyTeam = async req =>
+{
+    const myId = req.userData._id;
+    const team = await Team.findOne(
+        { 
+            members: { $elemMatch: { $eq: myId } } 
+        }
+    ).populate(['leader', 'members']);
+    return { team }
+
 }
