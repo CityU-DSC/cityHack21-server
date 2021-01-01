@@ -132,6 +132,7 @@ exports.joinTeam = async req =>
     team.members.push(myId);
 
     await team.save();
+    return { team }
 }
 
 exports.toogleTeamPrivate = async req =>
