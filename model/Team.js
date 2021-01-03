@@ -23,7 +23,7 @@ const teamSchema = mongoose.Schema({
 teamSchema.pre("save", async function (next)
 {
 	// Hash the password before saving the user model
-	now = new Date();
+	const now = new Date();
 	this.updated_at = now;
 	if (!this.created_at) this.created_at = now;
 
@@ -91,10 +91,10 @@ teamSchema.pre("find", async function (next)
 })
 
 
-teamSchema.methods.toJSON = async function() {
+teamSchema.methods.toJSON = function() {
     var obj = this.toObject();
     delete obj.teamCode;
-    delete obj.__v;
+	delete obj.__v;
     return obj;
 }
 

@@ -142,7 +142,7 @@ exports.toogleTeamPrivate = async req =>
     const team = await Team.findOne({ leader: myId });
     if (!team)
     {
-        throw Error('You are not in any team');
+        throw Error('You are not in any team, you are not a leader.');
     }
     team.private = !team.private;
 
