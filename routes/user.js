@@ -17,7 +17,7 @@ userRouter.get('/isAWSVerified', auth, userController.isAWSVerified)
 
 userRouter.post('/emailUsed', requestHandler(userController.emailUsed))
 userRouter.post('/accountIdUsed', requestHandler(userController.accountIdUsed))
-// user.get('/emailUsed', )
+userRouter.post('/forgetPassword', requestHandler(userController.forgetPassword))
 
 
 // Admin Api

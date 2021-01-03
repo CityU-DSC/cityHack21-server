@@ -217,7 +217,7 @@ userSchema.statics.sendAWSEducateReminderEmails = async (email, password) =>
     }
 }
 
-userSchema.methods.findByAccountId = (accountId) =>
+userSchema.statics.findByAccountId = async accountId =>
 {
     return User.findOne({ accountId });
 }

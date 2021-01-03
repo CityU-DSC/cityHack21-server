@@ -13,7 +13,7 @@ exports.registerNewUser = async (req, res) => {
             hasAWSAccount, needAWSExtraCredit, awsEducateReason, referrerAccountId, promoCode
         } = req.body;
 
-        const referrer = await User.findbyAccountId(referrerAccountId);
+        const referrer = await User.findByAccountId(referrerAccountId);
 
         const user = new User({ 
             nickName, accountId, 
@@ -122,7 +122,6 @@ exports.updateUserDetails = async (req, res) => {
 
 exports.listAllUsers = async (req, res) =>
 {
-    console.log("REQ>>>", req.query);
     const searchQuery = _.pickBy(req.query,_.identity)
     if (searchQuery.email){
         searchQuery.$or = [{
@@ -241,7 +240,15 @@ exports.emailUsed = async (req) => {
 
 exports.accountIdUsed = async (req) => {
     const { accountId } = req.body;
-    const user = await User.findOne({ accountId });
+    console.log(accountId);
+    const user = await User.findByAccountId(accountId);
     return { accountIdUsed: !!user };
+}
+
+exports.forgetPassword = async req => {
+
+
+
+    return {  }
 }
 
