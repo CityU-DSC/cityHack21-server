@@ -15,7 +15,7 @@ exports.createTeam = async (req) =>
 {
     let body = _.clone(req.body);
     body = _.pick(body, [
-        'name', 'description', 'topic', 'needPhysicalSpace', 'private'
+        'name', 'description', 'topic', 'needPhysicalSpace',
     ]);
 
     body['leader'] = req.userData._id
@@ -209,8 +209,8 @@ exports.getMyTeam = async req =>
 {
     const myId = req.userData._id;
     const team = await Team.findOne(
-        { 
-            members: { $elemMatch: { $eq: myId } } 
+        {
+            members: { $elemMatch: { $eq: myId } }
         }
     ).populate(['leader', 'members']);
     return { team }
