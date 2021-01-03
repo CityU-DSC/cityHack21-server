@@ -1,6 +1,8 @@
 const User = require("../model/User");
 const _ = require('lodash');
 const AWSVerification = require("../model/AWSVerification");
+const crypto = require('crypto');
+const emailController = require("./emailController")
 
 
 exports.registerNewUser = async (req, res) => {
@@ -55,17 +57,19 @@ exports.loginUser = async (req, res) =>
     {
         const email = req.body.email;
         const password = req.body.password;
-        const user = await User.findByCredentials(email, password);
-        if (!user)
+        const userNotVerified = await User.findOne({ email, verified: false });
+        if (userNotVerified)
         {
-            return res
-                .status(401)
-                .json({ error: "Login failed! Check authentication credentials" });
-        }
-        if (!user.verified){
             return res 
                 .status(401)
                 .json({ error: "This email is registered but not verified, please verify it.", reverify: true})
+        }
+        const user = await User.findByCredentials(email, password);
+        if (!user && userNotVerified)
+        { 
+            return res
+                .status(401)
+                .json({ error: "Login failed! Check authentication credentials" });
         }
 
         const token = await user.generateAuthToken();
@@ -97,6 +101,10 @@ exports.updateUserDetails = async (req, res) => {
         body.number = body.phoneNumber;
     }
 
+    if(body.referrerAccountId){
+        body.referrer = await User.findByAccountId(body.referrerAccountId);
+    }
+
     if (!req.userData){
         return res.status(400).json(
             {
@@ -106,7 +114,7 @@ exports.updateUserDetails = async (req, res) => {
         )
     }
 
-    const user = await User.findByIdAndUpdate(req.userData._id, body);
+    const user = await User.findById(req.userData._id);
 
     if (!user) {
         return res.status(404).json(
@@ -115,6 +123,13 @@ exports.updateUserDetails = async (req, res) => {
                 error: "User not exist"
             }
         )
+    } else {
+
+        for (let key in body){
+            user[key] = body[key]
+        }
+
+        await user.save();
     }
     return res.status(200).json({success: true});
 
@@ -142,7 +157,7 @@ exports.listAllUsers = async (req, res) =>
 exports.verifyUser = async (req, res) => {
     try {
         console.log(req.body);
-        const { verificationCode, email } = req.body;
+        const { verificationCode, email, password } = req.body;
 
         const user = await User.findOne({ email, verificationToken: verificationCode });
         if (!user) {
@@ -151,7 +166,9 @@ exports.verifyUser = async (req, res) => {
         }
         
         const token = await user.generateAuthToken(); // here it is calling the method that we created in the model
-        
+        if (password){
+            user.password = password;
+        }
         user.verified = true;
         await user.save();
         
@@ -240,15 +257,49 @@ exports.emailUsed = async (req) => {
 
 exports.accountIdUsed = async (req) => {
     const { accountId } = req.body;
-    console.log(accountId);
     const user = await User.findByAccountId(accountId);
     return { accountIdUsed: !!user };
 }
 
 exports.forgetPassword = async req => {
 
+    const { email } = req.body;
 
+    if (!email){
+        throw {
+            message: 'No input',
+            status: 400
+        }
+    }
+    const user = await User.findOne({ $or: [{ email: email }, { schoolEmail: email }] });
 
-    return {  }
+    if (!user) {
+        throw {
+            message: 'No such user.',
+            status: 404
+        }
+    } else {
+        const generateCode = () => {
+            return crypto.randomBytes(3).toString('hex').toUpperCase();
+        }
+        const code = generateCode();
+        user.verificationToken = code;
+        const arr = [];
+        for (let char of user.verificationToken)
+        {
+            arr.push(char);
+        }
+        await emailController.sendRegistrationEmail(
+            [user.email, user.schoolEmail],
+            user.nickName,
+            arr
+        );
+    
+        await user.save();
+    }
+}
+
+exports.userReferrerCount = async req => {
+    return { usersReferrerCount: await User.referrerCount() }
 }
 

@@ -98,13 +98,21 @@ const userSchema = mongoose.Schema({
     //     type: Boolean,
     //     default: false
     // }
-    referrer: { type: o, ref: "User" },
+    referrer: { 
+        type: o, 
+        ref: "User",
+        set: function(referrer) {
+            this._referrer = this.referrer;
+            return referrer;
+        }
+    },
+    referrerCount: { type: Number, default: 0 },
     promoCode: { type: String },
 
     team: { type: o, ref: "Team" },
 
     created_at: { type: Date, default: Date.now },
-    updated_at: { type: Date, default: Date.now }
+    updated_at: { type: Date, default: Date.now },
 });
 
 userSchema.pre("save", async function (next)
@@ -117,6 +125,21 @@ userSchema.pre("save", async function (next)
     if (user.isModified("password"))
     {
         user.password = await bcrypt.hash(user.password, 8);
+    }
+    console.log('PREEEE')
+    if (user.isModified('referrer')){
+
+        const user2 = await User.findById(user.referrer).select('referrerCount');
+        if (user2){
+            user2.referrerCount += 1;
+            await user2.save();
+        }
+        
+        const user1 = await User.findById(user._referrer).select('referrerCount');
+        if (user1){
+            user1.referrerCount -= 1;
+            await user1.save();
+        }
     }
     next();
 });
@@ -220,6 +243,10 @@ userSchema.statics.sendAWSEducateReminderEmails = async (email, password) =>
 userSchema.statics.findByAccountId = async accountId =>
 {
     return User.findOne({ accountId });
+}
+
+userSchema.statics.referrerCount = () => {
+    return User.find().select(['accountId', 'referrerCount'])
 }
 
 const User = mongoose.model("User", userSchema);

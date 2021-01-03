@@ -19,6 +19,8 @@ userRouter.post('/emailUsed', requestHandler(userController.emailUsed))
 userRouter.post('/accountIdUsed', requestHandler(userController.accountIdUsed))
 userRouter.post('/forgetPassword', requestHandler(userController.forgetPassword))
 
+userRouter.get('/referrerCounts', requestHandler(userController.userReferrerCount))
+
 
 // Admin Api
 userRouter.get('/listAllUsers', userController.listAllUsers);
