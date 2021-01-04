@@ -46,7 +46,7 @@ exports.createTeam = async (req) =>
 
     }
 
-    return { team };
+    return { team: await Team.findById(team._id).populate(['leader', 'members']) };
 }
 
 
@@ -191,6 +191,7 @@ exports.editTeam = async req =>
         }
 
     }
+    return { team: await }
 }
 
 exports.getTeamCode = async req =>
