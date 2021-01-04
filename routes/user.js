@@ -6,14 +6,14 @@ const { requestHandler } = require("../util/routeUtil");
 //Api
 userRouter.post("/register", userController.registerNewUser);
 userRouter.post("/login", userController.loginUser);
-userRouter.get("/me", auth, userController.getUserDetails);
-userRouter.put("/me", auth, userController.updateUserDetails);
+userRouter.get("/me", auth(), userController.getUserDetails);
+userRouter.put("/me", auth(), userController.updateUserDetails);
 
 userRouter.post('/reverifyEmail', userController.sendVerificaitonAgain);
 userRouter.post('/verifyEmail', userController.verifyUser);
 
-userRouter.post('/createAWSVerification', auth, userController.createAWSVerification)
-userRouter.get('/isAWSVerified', auth, userController.isAWSVerified)
+userRouter.post('/createAWSVerification', auth(), userController.createAWSVerification)
+userRouter.get('/isAWSVerified', auth(), userController.isAWSVerified)
 
 userRouter.post('/emailUsed', requestHandler(userController.emailUsed))
 userRouter.post('/accountIdUsed', requestHandler(userController.accountIdUsed))

@@ -53,7 +53,7 @@ teamSchema.pre("save", async function (next)
 	await User.update({_id: {$in: this.members}}, {team: this._id});
 
 
-	let isLeaderAMember = this.members.length == 0;
+	let isLeaderAMember = this.members.length == 0 && this.deleted;
 	for (let member of this.members)
 	{
 		if (member.equals(this.leader))
@@ -73,7 +73,7 @@ teamSchema.pre("save", async function (next)
 			return crypto.randomBytes(3).toString('hex').toUpperCase();
 		}
 		const code = generateCode();
-		team.teamCode = code;
+		this.teamCode = code;
 		
 	}
 
@@ -86,9 +86,8 @@ teamSchema.pre("save", async function (next)
 });
 
 
-teamSchema.pre("find", async function (next)
+teamSchema.pre(["find", "findOne"], async function (next)
 {
-	console.log(this.getQuery());
 	if (!('deleted' in this.getQuery()))
 	{
 		this.where({ deleted: false });

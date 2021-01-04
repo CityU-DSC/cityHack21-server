@@ -5,17 +5,6 @@ const User = require('../model/User');
 const crypto = require('crypto');
 
 
-exports.getAllTeam = async (req) =>
-{
-    const teams = await Team.find().populate(['leader', 'members']);
-    for (let team of teams){
-        if (team.members.map(m => m._id).indexOf(req.userData._id) == -1){
-            delete team.teamCode;
-        }
-    }
-    return { teams };
-}
-
 exports.createTeam = async (req) =>
 {
     let body = _.clone(req.body);
@@ -118,11 +107,18 @@ exports.searchTeam = async (req) =>
         query['topic']['$in'].append('SageMake')
     }
 
-    const results = await Team.find(query).populate(['leader', 'members']);
+    let results = await Team.find(query).populate(['leader', 'members']);
+    results = results.map(result => result.toJSON());
 
     for (let team of results){
-        if (team.members.map(m => m._id).indexOf(req.userData._id) == -1){
-            delete team.teamCode;
+        if (
+            !req.userData || 
+            team.members
+                .map(m => m._id)
+                .filter(m => m._id.equals(req.userData._id))
+                .length == 0
+        ){
+            delete team['teamCode'];
         }
     }
     return { teams: results }
@@ -145,28 +141,6 @@ exports.joinTeam = async req =>
     return { team }
 }
 
-exports.toogleTeamPrivate = async req =>
-{
-    const myId = req.userData._id;
-
-    const team = await Team.findOne({ leader: myId });
-    if (!team)
-    {
-        throw Error('You are not in any team, you are not a leader.');
-    }
-    team.private = !team.private;
-
-    const generateCode = () =>
-    {
-        return crypto.randomBytes(3).toString('hex').toUpperCase();
-    }
-    const code = generateCode();
-    team.teamCode = code;
-
-    await team.save();
-    return { teamCode: team.teamCode }
-}
-
 exports.editTeam = async req =>
 {
 
@@ -175,18 +149,19 @@ exports.editTeam = async req =>
     let body = _.clone(req.body);
     body = _.pick(body, ["name", "topic", "description", "leader", "needPhysicalSpace", "private"]);
 
-    if (private){
-        
-    }
-
     try
     {
-        await Team.findOneAndUpdate(
+        const team = await Team.findOne(
             {
                 leader: myId
-            },
-            body
+            }
         );
+        
+        for (let key in body ){
+            team[key] = body[key];
+        }
+
+        await team.save();
     } catch (err)
     {
         let errorMessage;
@@ -208,18 +183,6 @@ exports.editTeam = async req =>
     return { team: await Team.findOne({
         leader: myId
     }).populate(['leader', 'members']) }
-}
-
-exports.getTeamCode = async req =>
-{
-    const myId = req.userData._id;
-
-    const team = await Team.findOne({ members: { $elemMatch: { $eq: myId } } }).select('teamCode');
-    if (!team)
-    {
-        throw Error('You are not in any team');
-    }
-    return { teamCode: team.teamCode }
 }
 
 exports.getMyTeam = async req =>

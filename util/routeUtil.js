@@ -10,7 +10,6 @@ function requestHandler(executionFunction) {
 				response = { result: response }
 			}
             response.success = true;
-            console.log(response);
             return res.status(response.status? response.status: 200).json(response);
 		} catch (err) {
             if (err.message){
