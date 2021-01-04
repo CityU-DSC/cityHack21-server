@@ -12,7 +12,8 @@ exports.registerNewUser = async (req, res) => {
             university, majorProgram, year,
             sid, number, schoolEmail, personalEmail,
             avatarUrl, password, about, 
-            hasAWSAccount, needAWSExtraCredit, awsEducateReason, referrerAccountId, promoCode
+            hasAWSAccount, needAWSExtraCredit, awsEducateReason, referrerAccountId, promoCode,
+            address
         } = req.body;
 
         const referrer = await User.findByAccountId(referrerAccountId);
@@ -24,7 +25,8 @@ exports.registerNewUser = async (req, res) => {
             number, schoolEmail, email: personalEmail,
             avatarUrl, password, about, 
             hasAWSAccount, needAWSExtraCredit, awsEducateReason,
-            referrer, promoCode
+            referrer, promoCode,
+            address
         });
         try {
             await user.save();
@@ -92,7 +94,7 @@ exports.updateUserDetails = async (req, res) => {
     body = _.pick(body, ["nickName", "accountId", "firstName", "lastName",
         "university", "majorProgram", "year", "sid", "number", 
         "schoolEmail", "avatarUrl", "hasAWSAccount", "needAWSExtraCredit", "about", "academicYear",
-        "phoneNumber", "awsEducateReason", "referrerAccountId", "promoCode"
+        "phoneNumber", "awsEducateReason", "referrerAccountId", "promoCode", "address"
     ]);
     if (body.academicYear){
         body.year = body.academicYear;

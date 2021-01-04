@@ -108,6 +108,7 @@ const userSchema = mongoose.Schema({
     },
     referrerCount: { type: Number, default: 0 },
     promoCode: { type: String },
+    address: { type: String },
 
     team: { type: o, ref: "Team" },
 

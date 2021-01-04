@@ -20,7 +20,7 @@ exports.createTeam = async (req) =>
 {
     let body = _.clone(req.body);
     body = _.pick(body, [
-        'name', 'description', 'topic', 'needPhysicalSpace',
+        'name', 'description', 'topic', 'needPhysicalSpace', 'private'
     ]);
 
     body['leader'] = req.userData._id
