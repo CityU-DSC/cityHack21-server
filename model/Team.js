@@ -65,6 +65,17 @@ teamSchema.pre("save", async function (next)
 		throw Error('Leader is not a member');
 	}
 
+	if (this.isModified('private')){
+		
+		const generateCode = () =>
+		{
+			return crypto.randomBytes(3).toString('hex').toUpperCase();
+		}
+		const code = generateCode();
+		team.teamCode = code;
+		
+	}
+
 
 	if (this.private && !this.teamCode){
 		throw Error("No team code when the team is private.");
@@ -93,7 +104,6 @@ teamSchema.pre("find", async function (next)
 
 teamSchema.methods.toJSON = function() {
     var obj = this.toObject();
-    delete obj.teamCode;
 	delete obj.__v;
     return obj;
 }

@@ -8,6 +8,11 @@ const crypto = require('crypto');
 exports.getAllTeam = async (req) =>
 {
     const teams = await Team.find().populate(['leader', 'members']);
+    for (let team of teams){
+        if (team.members.map(m => m._id).indexOf(req.userData._id) == -1){
+            delete team.teamCode;
+        }
+    }
     return { teams };
 }
 
@@ -115,6 +120,11 @@ exports.searchTeam = async (req) =>
 
     const results = await Team.find(query).populate(['leader', 'members']);
 
+    for (let team of results){
+        if (team.members.map(m => m._id).indexOf(req.userData._id) == -1){
+            delete team.teamCode;
+        }
+    }
     return { teams: results }
 }
 
@@ -163,7 +173,11 @@ exports.editTeam = async req =>
     const myId = req.userData._id;
 
     let body = _.clone(req.body);
-    body = _.pick(body, ["name", "topic", "description", "leader", "needPhysicalSpace"]);
+    body = _.pick(body, ["name", "topic", "description", "leader", "needPhysicalSpace", "private"]);
+
+    if (private){
+        
+    }
 
     try
     {
