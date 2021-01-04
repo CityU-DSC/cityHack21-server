@@ -191,7 +191,9 @@ exports.editTeam = async req =>
         }
 
     }
-    return { team: await }
+    return { team: await Team.findOne({
+        leader: myId
+    }).populate(['leader', 'members']) }
 }
 
 exports.getTeamCode = async req =>
