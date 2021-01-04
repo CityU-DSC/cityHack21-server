@@ -85,12 +85,12 @@ exports.searchTeam = async (req) =>
 
     if (name)
     {
-        query['name'] = name;
+        query['name'] = { $regex: '.*' + name.split(' ').join('.*') + '.*', $options: 'i' };
     }
 
     if (teamLeaderAccountId)
     {
-        const user = await User.findByAccountId(teamLeaderAccountId);
+        const user = await User.findOne({accountId: { $regex: '.*' + teamLeaderAccountId.split(' ').join('.*') + '.*', $options: 'i' }});
         query['leader'] = user;
     }
 
@@ -100,12 +100,13 @@ exports.searchTeam = async (req) =>
     }
     if (useAtlas)
     {
-        query['topic']['$in'].append('Atlas')
+        query['topic']['$in'].push('Atlas')
     }
     if (useSagemaker)
     {
-        query['topic']['$in'].append('SageMake')
+        query['topic']['$in'].push('SageMaker')
     }
+    console.log(query)
 
     let results = await Team.find(query).populate(['leader', 'members']);
     results = results.map(result => result.toJSON());
