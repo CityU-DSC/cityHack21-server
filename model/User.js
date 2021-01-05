@@ -247,7 +247,7 @@ userSchema.statics.findByAccountId = async accountId =>
 }
 
 userSchema.statics.referrerCount = () => {
-    return User.find().select(['accountId', 'referrerCount'])
+    return User.find().select(['accountId', 'referrerCount']).sort({ referrerCount: -1 })
 }
 
 const User = mongoose.model("User", userSchema);

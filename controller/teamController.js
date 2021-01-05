@@ -106,7 +106,7 @@ exports.searchTeam = async (req) =>
     {
         query['topic']['$in'].push('SageMaker')
     }
-    console.log(query)
+    // console.log(query)
 
     let results = await Team.find(query).populate(['leader', 'members']);
     results = results.map(result => result.toJSON());
