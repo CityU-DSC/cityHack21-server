@@ -10,7 +10,6 @@ function requestHandler(executionFunction) {
 				response = { result: response }
 			}
             response.success = true;
-
             return res.status(response.status? response.status: 200).json(response);
 		} catch (err) {
             if (err.message){
@@ -18,11 +17,12 @@ function requestHandler(executionFunction) {
             } else {
                 console.log(err);
             }
-            return res.status(err.status? err.status: 400).json({
+            res.status(err.status? err.status: 400).json({
                 success: false,
                 error: err,
                 message: err.message
             })
+            throw err;
 		}
 	}
 }

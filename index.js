@@ -19,7 +19,7 @@ const cronJobs = require('./util/cron');
 //configure database and mongoose
 mongoose.set("useCreateIndex", true);
 mongoose
-    .connect(config.database, { useNewUrlParser: true })
+    .connect(config.database, { useNewUrlParser: true, autoIndex: true })
     .then(() => {
         console.log("Database is connected");
     })

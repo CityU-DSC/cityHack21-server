@@ -21,8 +21,8 @@ const transporterCredentials = {
 	}
 }
 const sender = 'cityhack21.com';
-const defaultRecievers = ['lowzhao@gmail.com'];
-const cc = ['lowzhao@gmail.com'];
+const defaultRecievers = [];
+const cc = [];
 
 
 async function sendEmail(

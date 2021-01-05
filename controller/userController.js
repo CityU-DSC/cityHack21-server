@@ -1,6 +1,8 @@
 const User = require("../model/User");
 const _ = require('lodash');
 const AWSVerification = require("../model/AWSVerification");
+const crypto = require('crypto');
+const emailController = require("./emailController")
 
 
 exports.registerNewUser = async (req, res) => {
@@ -10,8 +12,11 @@ exports.registerNewUser = async (req, res) => {
             university, majorProgram, year,
             sid, number, schoolEmail, personalEmail,
             avatarUrl, password, about, 
-            hasAWSAccount, needAWSExtraCredit, awsEducateReason
+            hasAWSAccount, needAWSExtraCredit, awsEducateReason, referrerAccountId, promoCode,
+            address
         } = req.body;
+
+        const referrer = await User.findByAccountId(referrerAccountId);
 
         const user = new User({ 
             nickName, accountId, 
@@ -19,7 +24,9 @@ exports.registerNewUser = async (req, res) => {
             majorProgram, year, sid, 
             number, schoolEmail, email: personalEmail,
             avatarUrl, password, about, 
-            hasAWSAccount, needAWSExtraCredit, awsEducateReason
+            hasAWSAccount, needAWSExtraCredit, awsEducateReason,
+            referrer, promoCode,
+            address
         });
         try {
             await user.save();
@@ -52,17 +59,19 @@ exports.loginUser = async (req, res) =>
     {
         const email = req.body.email;
         const password = req.body.password;
-        const user = await User.findByCredentials(email, password);
-        if (!user)
+        const userNotVerified = await User.findOne({ email, verified: false });
+        if (userNotVerified)
         {
-            return res
-                .status(401)
-                .json({ error: "Login failed! Check authentication credentials" });
-        }
-        if (!user.verified){
             return res 
                 .status(401)
                 .json({ error: "This email is registered but not verified, please verify it.", reverify: true})
+        }
+        const user = await User.findByCredentials(email, password);
+        if (!user && userNotVerified)
+        { 
+            return res
+                .status(401)
+                .json({ error: "Login failed! Check authentication credentials" });
         }
 
         const token = await user.generateAuthToken();
@@ -85,13 +94,17 @@ exports.updateUserDetails = async (req, res) => {
     body = _.pick(body, ["nickName", "accountId", "firstName", "lastName",
         "university", "majorProgram", "year", "sid", "number", 
         "schoolEmail", "avatarUrl", "hasAWSAccount", "needAWSExtraCredit", "about", "academicYear",
-        "phoneNumber", "awsEducateReason"
+        "phoneNumber", "awsEducateReason", "referrerAccountId", "promoCode", "address"
     ]);
     if (body.academicYear){
         body.year = body.academicYear;
     } 
     if (body.phoneNumber){
         body.number = body.phoneNumber;
+    }
+
+    if(body.referrerAccountId){
+        body.referrer = await User.findByAccountId(body.referrerAccountId);
     }
 
     if (!req.userData){
@@ -103,7 +116,7 @@ exports.updateUserDetails = async (req, res) => {
         )
     }
 
-    const user = await User.findByIdAndUpdate(req.userData._id, body);
+    const user = await User.findById(req.userData._id);
 
     if (!user) {
         return res.status(404).json(
@@ -112,6 +125,13 @@ exports.updateUserDetails = async (req, res) => {
                 error: "User not exist"
             }
         )
+    } else {
+
+        for (let key in body){
+            user[key] = body[key]
+        }
+
+        await user.save();
     }
     return res.status(200).json({success: true});
 
@@ -119,18 +139,27 @@ exports.updateUserDetails = async (req, res) => {
 
 exports.listAllUsers = async (req, res) =>
 {
-    User.find({}, function (err, users)
+    const searchQuery = _.pickBy(req.query,_.identity)
+    if (searchQuery.email){
+        searchQuery.$or = [{
+            email: searchQuery.email
+        }, {
+            schoolEmail: searchQuery.email}]
+        delete searchQuery.email
+    }
+
+    User.find({...searchQuery}, function (err, users)
     {
-        users = users.map(user => _.pick(user, ['_id', 'accountId', 'email', 'created_at', 'updated_at']));
+        // users = users.map(user => _.pick(user, ['_id', 'accountId', 'email', 'created_at', 'updated_at']));
         console.log("USERS>>>", users)
         res.status(200).json(users);
-    });
+    }).populate('team');
 }
 
 exports.verifyUser = async (req, res) => {
     try {
         console.log(req.body);
-        const { verificationCode, email } = req.body;
+        const { verificationCode, email, password } = req.body;
 
         const user = await User.findOne({ email, verificationToken: verificationCode });
         if (!user) {
@@ -139,7 +168,9 @@ exports.verifyUser = async (req, res) => {
         }
         
         const token = await user.generateAuthToken(); // here it is calling the method that we created in the model
-        
+        if (password){
+            user.password = password;
+        }
         user.verified = true;
         await user.save();
         
@@ -228,7 +259,49 @@ exports.emailUsed = async (req) => {
 
 exports.accountIdUsed = async (req) => {
     const { accountId } = req.body;
-    const user = await User.findOne({ accountId });
+    const user = await User.findByAccountId(accountId);
     return { accountIdUsed: !!user };
+}
+
+exports.forgetPassword = async req => {
+
+    const { email } = req.body;
+
+    if (!email){
+        throw {
+            message: 'No input',
+            status: 400
+        }
+    }
+    const user = await User.findOne({ $or: [{ email: email }, { schoolEmail: email }] });
+
+    if (!user) {
+        throw {
+            message: 'No such user.',
+            status: 404
+        }
+    } else {
+        const generateCode = () => {
+            return crypto.randomBytes(3).toString('hex').toUpperCase();
+        }
+        const code = generateCode();
+        user.verificationToken = code;
+        const arr = [];
+        for (let char of user.verificationToken)
+        {
+            arr.push(char);
+        }
+        await emailController.sendRegistrationEmail(
+            [user.email, user.schoolEmail],
+            user.nickName,
+            arr
+        );
+    
+        await user.save();
+    }
+}
+
+exports.userReferrerCount = async req => {
+    return { usersReferrerCount: await User.referrerCount() }
 }
 

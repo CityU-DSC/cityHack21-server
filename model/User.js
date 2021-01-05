@@ -7,6 +7,9 @@ const emailController = require('../controller/emailController');
 
 const dateUtil = require('../util/dateUtil');
 
+const o = mongoose.Schema.Types.ObjectId;
+
+
 const userSchema = mongoose.Schema({
 
     accountId: {
@@ -45,7 +48,7 @@ const userSchema = mongoose.Schema({
         required: [true, 'Please include your academic year information']
     },
     sid: String,
-    
+
     number: {
         type: String,
         required: [true, 'Please include your academic year information']
@@ -58,8 +61,9 @@ const userSchema = mongoose.Schema({
 
     password: {
         type: String,
-        default: () => {
-            return (new Date()/1000) + ''
+        default: () =>
+        {
+            return (new Date() / 1000) + ''
         },
         required: [true, "Please Include your password"]
     },
@@ -94,25 +98,56 @@ const userSchema = mongoose.Schema({
     //     type: Boolean,
     //     default: false
     // }
+    referrer: { 
+        type: o, 
+        ref: "User",
+        set: function(referrer) {
+            this._referrer = this.referrer;
+            return referrer;
+        }
+    },
+    referrerCount: { type: Number, default: 0 },
+    promoCode: { type: String },
+    address: { type: String },
 
-    created_at: {type: Date, default: Date.now},
-    updated_at: {type: Date, default: Date.now}
+    team: { type: o, ref: "Team" },
+
+    created_at: { type: Date, default: Date.now },
+    updated_at: { type: Date, default: Date.now },
 });
 
-userSchema.pre("save", async function(next) {
+userSchema.pre("save", async function (next)
+{
     // Hash the password before saving the user model
     now = new Date();
     this.updated_at = now;
-    if(!this.created_at) this.created_at = now;
+    if (!this.created_at) this.created_at = now;
     const user = this;
-    if (user.isModified("password")) {
+    if (user.isModified("password"))
+    {
         user.password = await bcrypt.hash(user.password, 8);
+    }
+    console.log('PREEEE')
+    if (user.isModified('referrer')){
+
+        const user2 = await User.findById(user.referrer).select('referrerCount');
+        if (user2){
+            user2.referrerCount += 1;
+            await user2.save();
+        }
+        
+        const user1 = await User.findById(user._referrer).select('referrerCount');
+        if (user1){
+            user1.referrerCount -= 1;
+            await user1.save();
+        }
     }
     next();
 });
 
 //this function generates an auth token for the user
-userSchema.methods.generateAuthToken = async function() {
+userSchema.methods.generateAuthToken = async function ()
+{
     const user = this;
     const token = jwt.sign(
         { _id: user._id, accountId: user.accountId, email: user.email },
@@ -123,28 +158,32 @@ userSchema.methods.generateAuthToken = async function() {
     return token;
 };
 
-userSchema.methods.generateVerificationEmail = async function() {
+userSchema.methods.generateVerificationEmail = async function ()
+{
     const user = this;
 
-    const generateCode = () => {
+    const generateCode = () =>
+    {
         return crypto.randomBytes(3).toString('hex').toUpperCase();
     }
     const code = generateCode();
     user.verificationToken = code;
     const arr = [];
-    for (let char of user.verificationToken) {
+    for (let char of user.verificationToken)
+    {
         arr.push(char);
     }
     await emailController.sendRegistrationEmail(
-        [user.email, user.schoolEmail], 
-        user.nickName, 
+        [user.email, user.schoolEmail],
+        user.nickName,
         arr
     );
 
     await user.save();
 }
 
-userSchema.methods.toJSON = function() {
+userSchema.methods.toJSON = function ()
+{
     var obj = this.toObject();
     delete obj.password;
     delete obj.verificationToken;
@@ -154,39 +193,45 @@ userSchema.methods.toJSON = function() {
 }
 
 //this method search for a user by email and password.
-userSchema.statics.findByCredentials = async (email, password) => {
+userSchema.statics.findByCredentials = async (email, password) =>
+{
     const user = await User.findOne({ email });
-    if (!user) {
+    if (!user)
+    {
         throw new Error({ error: "Invalid login details" });
     }
     const isPasswordMatch = await bcrypt.compare(password, user.password);
-    if (!isPasswordMatch) {
+    if (!isPasswordMatch)
+    {
         throw new Error({ error: "Invalid login details" });
     }
     return user;
 };
 
 
-userSchema.statics.sendAWSEducateReminderEmails = async (email, password) => {
-    const users = await User.find({verified: false});
-    for (let user of users){
+userSchema.statics.sendAWSEducateReminderEmails = async (email, password) =>
+{
+    const users = await User.find({ verified: false });
+    for (let user of users)
+    {
         if (
             (
                 [3, 7, 14, 21].indexOf(
                     parseInt(
-                        dateUtil.dateToDay(new Date()) - 
+                        dateUtil.dateToDay(new Date()) -
                         dateUtil.dateToDay(user.created_at)
                     )
                 ) != -1
             ) || (
                 [7, 3, 1].indexOf(
                     parseInt(
-                        dateUtil.dateToDay(dateUtil.hackathonDate) - 
+                        dateUtil.dateToDay(dateUtil.hackathonDate) -
                         dateUtil.dateToDay(new Date())
                     )
                 ) != -1
             )
-        ) {
+        )
+        {
             await emailController.sendAWSReminderEmail(
                 [user.email, user.schoolEmail].filter(x => x),
                 user.nickName,
@@ -194,6 +239,15 @@ userSchema.statics.sendAWSEducateReminderEmails = async (email, password) => {
             );
         }
     }
+}
+
+userSchema.statics.findByAccountId = async accountId =>
+{
+    return User.findOne({ accountId });
+}
+
+userSchema.statics.referrerCount = () => {
+    return User.find().select(['accountId', 'referrerCount'])
 }
 
 const User = mongoose.model("User", userSchema);
