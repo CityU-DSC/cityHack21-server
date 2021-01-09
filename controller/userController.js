@@ -147,6 +147,12 @@ exports.listAllUsers = async (req, res) =>
             schoolEmail: searchQuery.email}]
         delete searchQuery.email
     }
+    if (searchQuery.noTeam){
+        searchQuery['team'] = null;
+    }
+    if ('noTeam' in searchQuery){
+        delete searchQuery['noTeam'];
+    }
 
     User.find({...searchQuery}, function (err, users)
     {
@@ -306,6 +312,13 @@ exports.forgetPassword = async req => {
 }
 
 exports.userReferrerCount = async req => {
-    return { 'referrers' : await User.find().limit(30) };
+    let users = await User.find().sort('-referrerCount').limit(30);
+    users = users.map( (val, idx) => {
+        val = val.toJSON();
+        val.rank = idx+1;
+        return val;
+    })
+    
+    return { 'referrers' :  users};
 }
 
