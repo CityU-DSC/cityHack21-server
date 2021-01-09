@@ -110,6 +110,8 @@ const userSchema = mongoose.Schema({
     promoCode: { type: String },
     address: { type: String },
 
+    admin: { type: Boolean, default: false, immutable: true},
+
     team: { type: o, ref: "Team" },
 
     created_at: { type: Date, default: Date.now },
@@ -127,7 +129,6 @@ userSchema.pre("save", async function (next)
     {
         user.password = await bcrypt.hash(user.password, 8);
     }
-    console.log('PREEEE')
     if (user.isModified('referrer')){
 
         const user2 = await User.findById(user.referrer).select('referrerCount');
@@ -149,8 +150,13 @@ userSchema.pre("save", async function (next)
 userSchema.methods.generateAuthToken = async function ()
 {
     const user = this;
+
+    const signObject = { _id: user._id, accountId: user.accountId, email: user.email };
+    if (user.admin) {
+        signObject['admin'] = true;
+    }
     const token = jwt.sign(
-        { _id: user._id, accountId: user.accountId, email: user.email },
+        signObject,
         "secret"
     );
     user.tokens = user.tokens.concat({ token });
