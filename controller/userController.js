@@ -152,7 +152,7 @@ exports.listAllUsers = async (req, res) =>
     {
         // users = users.map(user => _.pick(user, ['_id', 'accountId', 'email', 'created_at', 'updated_at']));
         res.status(200).json(users);
-    }).populate('team').select(['-avatarUrl']);
+    }).populate('team');
 }
 
 exports.verifyUser = async (req, res) => {
@@ -232,6 +232,11 @@ exports.createAWSVerification = async (req, res) => {
     }
 }
 
+exports.getAWSVerifications = async (req) => {
+    const myId = req.userData._id;
+    return { awsVerifications: await AWSVerification.find({userId: myId}).sort('-created_at').limit(1) };
+}
+
 exports.isAWSVerified = async (req, res) => {
     const awsVerification = await AWSVerification.find({
         userId: req.userData._id
@@ -301,6 +306,6 @@ exports.forgetPassword = async req => {
 }
 
 exports.userReferrerCount = async req => {
-    return { usersReferrerCount: await User.referrerCount() }
+    return { 'referrers' : await User.find().limit(30) };
 }
 
