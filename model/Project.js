@@ -1,5 +1,8 @@
 const mongoose = require("mongoose");
 
+const o = mongoose.Schema.Types.ObjectId;
+
+
 const projectSchema = mongoose.Schema({
     name: String,
     pdfUrl: {
@@ -23,7 +26,7 @@ const projectSchema = mongoose.Schema({
     motivation: String,
     tech: [String],
     
-    votes: number,
+    votes: Number,
 
     created_at: {type: Date, default: Date.now},
     updated_at: {type: Date, default: Date.now}
