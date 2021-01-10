@@ -3,6 +3,7 @@ const auth = require("../config/auth");
 const userController = require("../controller/userController");
 const { requestHandler } = require("../util/routeUtil");
 
+
 //Api
 userRouter.post("/register", userController.registerNewUser);
 userRouter.post("/login", userController.loginUser);
@@ -20,7 +21,7 @@ userRouter.post('/accountIdUsed', requestHandler(userController.accountIdUsed))
 userRouter.post('/forgetPassword', requestHandler(userController.forgetPassword))
 
 userRouter.get('/referrerCounts', requestHandler(userController.userReferrerCount))
-
+userRouter.get('/awsVerifications', auth(), requestHandler(userController.getAWSVerifications))
 
 // Admin Api
 userRouter.get('/listAllUsers', userController.listAllUsers);

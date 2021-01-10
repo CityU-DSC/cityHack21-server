@@ -7,23 +7,23 @@ const emailController = require("./emailController")
 
 exports.registerNewUser = async (req, res) => {
     try {
-        const { nickName, 
+        const { nickName,
             accountId, firstName, lastName,
             university, majorProgram, year,
             sid, number, schoolEmail, personalEmail,
-            avatarUrl, password, about, 
+            avatarUrl, password, about,
             hasAWSAccount, needAWSExtraCredit, awsEducateReason, referrerAccountId, promoCode,
             address
         } = req.body;
 
         const referrer = await User.findByAccountId(referrerAccountId);
 
-        const user = new User({ 
-            nickName, accountId, 
-            firstName, lastName, university, 
-            majorProgram, year, sid, 
+        const user = new User({
+            nickName, accountId,
+            firstName, lastName, university,
+            majorProgram, year, sid,
             number, schoolEmail, email: personalEmail,
-            avatarUrl, password, about, 
+            avatarUrl, password, about,
             hasAWSAccount, needAWSExtraCredit, awsEducateReason,
             referrer, promoCode,
             address
@@ -44,7 +44,7 @@ exports.registerNewUser = async (req, res) => {
                 emailUsed: !!err.keyPattern.email,
             });
         }
-        
+
         await user.generateVerificationEmail();
         res.status(201).json({ user: user });
     } catch (err) {
@@ -62,13 +62,13 @@ exports.loginUser = async (req, res) =>
         const userNotVerified = await User.findOne({ email, verified: false });
         if (userNotVerified)
         {
-            return res 
+            return res
                 .status(401)
                 .json({ error: "This email is registered but not verified, please verify it.", reverify: true})
         }
         const user = await User.findByCredentials(email, password);
         if (!user && userNotVerified)
-        { 
+        {
             return res
                 .status(401)
                 .json({ error: "Login failed! Check authentication credentials" });
@@ -92,13 +92,13 @@ exports.getUserDetails = async (req, res) =>
 exports.updateUserDetails = async (req, res) => {
     let body = _.clone(req.body);
     body = _.pick(body, ["nickName", "accountId", "firstName", "lastName",
-        "university", "majorProgram", "year", "sid", "number", 
+        "university", "majorProgram", "year", "sid", "number",
         "schoolEmail", "avatarUrl", "hasAWSAccount", "needAWSExtraCredit", "about", "academicYear",
         "phoneNumber", "awsEducateReason", "referrerAccountId", "promoCode", "address"
     ]);
     if (body.academicYear){
         body.year = body.academicYear;
-    } 
+    }
     if (body.phoneNumber){
         body.number = body.phoneNumber;
     }
@@ -147,11 +147,16 @@ exports.listAllUsers = async (req, res) =>
             schoolEmail: searchQuery.email}]
         delete searchQuery.email
     }
+    if (searchQuery.noTeam){
+        searchQuery['team'] = null;
+    }
+    if ('noTeam' in searchQuery){
+        delete searchQuery['noTeam'];
+    }
 
     User.find({...searchQuery}, function (err, users)
     {
         // users = users.map(user => _.pick(user, ['_id', 'accountId', 'email', 'created_at', 'updated_at']));
-        console.log("USERS>>>", users)
         res.status(200).json(users);
     }).populate('team');
 }
@@ -163,17 +168,17 @@ exports.verifyUser = async (req, res) => {
 
         const user = await User.findOne({ email, verificationToken: verificationCode });
         if (!user) {
-            return res.status(401).json({ 
+            return res.status(401).json({
                 message: "Wrong verification code." })
         }
-        
+
         const token = await user.generateAuthToken(); // here it is calling the method that we created in the model
         if (password){
             user.password = password;
         }
         user.verified = true;
         await user.save();
-        
+
         return res.status(200).json({ user, token });
     } catch (err) {
         return res.status(400).json({ err: err });
@@ -201,7 +206,7 @@ exports.sendVerificaitonAgain = async (req, res) => {
         return res.status(200).json({
             success: true
         })
-        
+
     } catch (err) {
         return res.status(400).json({ err });
     }
@@ -209,7 +214,7 @@ exports.sendVerificaitonAgain = async (req, res) => {
 
 
 
-// == AWS Vertfication == 
+// == AWS Vertfication ==
 exports.createAWSVerification = async (req, res) => {
     try {
 
@@ -231,6 +236,11 @@ exports.createAWSVerification = async (req, res) => {
     } catch (err) {
         return res.status(400).json({ err });
     }
+}
+
+exports.getAWSVerifications = async (req) => {
+    const myId = req.userData._id;
+    return { awsVerifications: await AWSVerification.find({userId: myId}).sort('-created_at').limit(1) };
 }
 
 exports.isAWSVerified = async (req, res) => {
@@ -296,12 +306,19 @@ exports.forgetPassword = async req => {
             user.nickName,
             arr
         );
-    
+
         await user.save();
     }
 }
 
 exports.userReferrerCount = async req => {
-    return { usersReferrerCount: await User.referrerCount() }
+    let users = await User.find().sort('-referrerCount').limit(30);
+    users = users.map( (val, idx) => {
+        val = val.toJSON();
+        val.rank = idx+1;
+        return val;
+    })
+    
+    return { 'referrers' :  users};
 }
 
