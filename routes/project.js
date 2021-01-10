@@ -10,7 +10,7 @@ projectRouter
 	.get('/me', auth(), rh(projectController.project))
 	.get('/all', auth(false),rh(projectController.projects))
 
-	.put('/toogleVote', auth(), rh(projectController.toogleProjectVote))
+	.put('/toggleVote', auth(), rh(projectController.toggleProjectVote))
 
 	.post('/create', auth(), rh(projectController.createProject))
 	.put('/edit', auth(), rh(projectController.editProject))

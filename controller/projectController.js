@@ -2,6 +2,7 @@ const _ = require('lodash');
 const { copyFilter } = require('../util/lodashUtil');
 const Project = require('../model/Project');
 const User = require('../model/User');
+const Team = require('../model/Team');
 
 async function findTeam(req, leaderOnly = false)
 {
@@ -24,8 +25,7 @@ async function findTeam(req, leaderOnly = false)
     return team;
 }
 
-exports.createProject = async req =>
-{
+exports.createProject = async req => {
 
     const body = copyFilter(req.body, [
         'pdfUrl', 'repositoryUrl',
@@ -33,7 +33,21 @@ exports.createProject = async req =>
         'tech', 'name'
     ]);
 
-    body.teamId = await findTeam(req, true);
+    let team = await findTeam(req, true);
+    if (!team){
+        if ((await findTeam(req))) {
+            throw {
+                message: "Only leader can create project",
+                status: 403
+            }
+        } else {
+            throw {
+                message: "Please create team before project. Team not found.",
+                status: 404
+            }
+        }
+    }
+    body.teamId = team;
 
     if (await Project.findOne({ teamId: team }))
     {
@@ -54,7 +68,9 @@ exports.project = async req => {
         path: 'team',
         populate: ['leader', 'members']
     });
-    project.voted = false;
+    if (project) {
+        project.voted = false;
+    }
     return { project: project };
 }
 
@@ -69,7 +85,7 @@ exports.projects = async req => {
         project.voted = false;
     }
 
-    if (req.userData._id) {
+    if (req.userdata) {
         const myId = req.userData._id;
         const user = await User.findById(myId).select('projectVoted');
 
@@ -94,6 +110,12 @@ exports.editProject = async req => {
     ]);
     const team = await findTeam(req, true);
     const project = await Project.findOne({ teamId: team });
+    if (!project){
+        throw {
+            message:"Project not found",
+            status: 404
+        }
+    }
 
     for (let bodyKey in body){
         project[bodyKey] = body[bodyKey];
@@ -105,20 +127,33 @@ exports.editProject = async req => {
     return { project };
 }
 
-exports.toogleProjectVote = async req =>
+exports.toggleProjectVote = async req =>
 {
     let { voteProjectId } = req.body;
+    if (!voteProjectId){
+        throw {
+            message: "Please provide voteProjectId",
+            status: 400
+        }
+    }
     const myId = req.userData._id;
 
     const user = await User.findById(myId);
+    const team = await findTeam(req);
+
     const project = await Project.findById(voteProjectId);
 
-    if (project._id.equals(voteProjectId)){
-        throw {
-            message: "Cannot vote yourself. Please go look at the mirror.",
-            status: 403
+    if (team){
+        const myProject = await Project.findOne({teamId: team});
+
+        if (myProject && project._id.equals(myProject._id)){
+            throw {
+                message: "Cannot vote yourself. Please go look at the mirror XD.",
+                status: 403
+            }
         }
     }
+
 
     const projectVoted = user.projectVoted.filter(x => x.equals(voteProjectId)).length > 0;
     if (projectVoted)

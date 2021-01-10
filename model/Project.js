@@ -26,7 +26,7 @@ const projectSchema = mongoose.Schema({
     motivation: String,
     tech: [String],
     
-    votes: Number,
+    votes: { type: Number, default: 0},
 
     created_at: {type: Date, default: Date.now},
     updated_at: {type: Date, default: Date.now}
