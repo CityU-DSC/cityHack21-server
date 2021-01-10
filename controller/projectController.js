@@ -50,32 +50,59 @@ exports.createProject = async req =>
 }
 
 exports.project = async req => {
-    return { project: await Project.findOne({ teamId: await findTeam(req, false) }).populate({
+    const project = await Project.findOne({ teamId: await findTeam(req, false) }).populate({
         path: 'team',
         populate: ['leader', 'members']
-    }) }
+    });
+    project.voted = false;
+    return { project: project };
 }
 
 exports.projects = async req => {
-    return { projects: await Project.find().populate({
+    const projects = await Project.find().populate({
         path: 'team',
         populate: ['leader', 'members']
-    }) };
+    })
+
+
+    for (let project of projects){
+        project.voted = false;
+    }
+
+    if (req.userData._id) {
+        const myId = req.userData._id;
+        const user = await User.findById(myId).select('projectVoted');
+
+        for (let projectVoted_ of user.projectVoted){
+            for (let project of projects){
+                if (projectVoted_.equals(project._id)){
+                    project.voted = true;
+                }
+            }
+        }
+    }
+
+
+    return { projects };
 }
 
-exports.editProject = async req =>
-{
-
+exports.editProject = async req => {
     const body = copyFilter(req.body, [
         'pdfUrl', 'repositoryUrl',
         'description', 'motivation',
         'tech', 'name'
     ]);
     const team = await findTeam(req, true);
-    await Project.findOneAndUpdate(
-        { teamId: team }, body
-    )
+    const project = await Project.findOne({ teamId: team });
 
+    for (let bodyKey in body){
+        project[bodyKey] = body[bodyKey];
+    }
+    await project.save();
+
+    project.voted = false;
+
+    return { project };
 }
 
 exports.toogleProjectVote = async req =>
@@ -85,6 +112,13 @@ exports.toogleProjectVote = async req =>
 
     const user = await User.findById(myId);
     const project = await Project.findById(voteProjectId);
+
+    if (project._id.equals(voteProjectId)){
+        throw {
+            message: "Cannot vote yourself. Please go look at the mirror.",
+            status: 403
+        }
+    }
 
     const projectVoted = user.projectVoted.filter(x => x.equals(voteProjectId)).length > 0;
     if (projectVoted)

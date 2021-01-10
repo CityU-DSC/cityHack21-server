@@ -8,7 +8,7 @@ const rh = requestHandler;
 //Api
 projectRouter
 	.get('/me', auth(), rh(projectController.project))
-	.get('/all', rh(projectController.projects))
+	.get('/all', auth(false),rh(projectController.projects))
 
 	.put('/toogleVote', auth(), rh(projectController.toogleProjectVote))
 
