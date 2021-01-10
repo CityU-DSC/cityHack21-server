@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const User = require("./User");
+const Project = require('./Project');
 const crypto = require('crypto');
 
 const o = mongoose.Schema.Types.ObjectId;
@@ -65,6 +66,21 @@ teamSchema.pre("save", async function (next)
 	{
 		throw Error('Leader is not a member');
 	}
+
+	const members = await User.find({_id: {$in:this.members}});
+	const projectOfTeam = await Project.findOne({teamId: this._id});
+	if (projectOfTeam){
+		for (let member of members){
+			const tempProjectVoted = members.projectVoted.filter(x =>projectOfTeam._id.equals(x));
+			if (tempProjectVoted.length > 0) {
+				member.projectVoted = members.projectVoted.filter(x => !projectOfTeam._id.equals(x));
+				projectOfTeam.votes -= 1;
+				await member.save();
+			}
+		}
+		await projectOfTeam.save();
+	}
+	
 
 	if (this.isModified('private')){
 		
