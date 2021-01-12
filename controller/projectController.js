@@ -30,7 +30,7 @@ exports.createProject = async req => {
     const body = copyFilter(req.body, [
         'pdfUrl', 'repositoryUrl',
         'description', 'motivation',
-        'tech', 'name'
+        'tech', 'name', 'logoUrl'
     ]);
 
     let team = await findTeam(req, true);

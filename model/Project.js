@@ -7,7 +7,11 @@ const projectSchema = mongoose.Schema({
     name: String,
     pdfUrl: {
         type: String,
-        required: [true, 'Please include pdf.']
+        required: [true, 'Please include pdf presentation.']
+    },
+    logoUrl: {
+        type: String,
+        required: [true, 'Please include logo Image.']
     },
 
     repositoryUrl: {
@@ -16,16 +20,16 @@ const projectSchema = mongoose.Schema({
     },
 
     teamId: {
-        type: o, 
-        ref: "Team", 
-        required: [true, 'Please include team.'], 
+        type: o,
+        ref: "Team",
+        required: [true, 'Please include team.'],
         unique: true,
     },
 
     description: String,
     motivation: String,
     tech: [String],
-    
+
     votes: { type: Number, default: 0},
 
     created_at: {type: Date, default: Date.now},
