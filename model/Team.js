@@ -68,7 +68,7 @@ teamSchema.pre("save", async function (next)
 	}
 
 	const members = await User.find({_id: {$in:this.members}});
-	const projectOfTeam = await Project.findOne({teamId: this._id});
+	const projectOfTeam = await Project.findOne({team: this._id});
 	if (projectOfTeam){
 		for (let member of members){
 			const tempProjectVoted = members.projectVoted.filter(x =>projectOfTeam._id.equals(x));

@@ -47,9 +47,9 @@ exports.createProject = async req => {
             }
         }
     }
-    body.teamId = team;
+    body.team = team;
 
-    if (await Project.findOne({ teamId: team }))
+    if (await Project.findOne({ team }))
     {
         throw new Error('Project has already created.');
     }
@@ -64,7 +64,7 @@ exports.createProject = async req => {
 }
 
 exports.project = async req => {
-    const project = await Project.findOne({ teamId: await findTeam(req, false) }).populate({
+    const project = await Project.findOne({ team: await findTeam(req, false) }).populate({
         path: 'team',
         populate: ['leader', 'members']
     });
@@ -109,7 +109,7 @@ exports.editProject = async req => {
         'tech', 'name'
     ]);
     const team = await findTeam(req, true);
-    const project = await Project.findOne({ teamId: team });
+    const project = await Project.findOne({ team: team });
     if (!project){
         throw {
             message:"Project not found",
@@ -144,7 +144,7 @@ exports.toggleProjectVote = async req =>
     const project = await Project.findById(voteProjectId);
 
     if (team){
-        const myProject = await Project.findOne({teamId: team});
+        const myProject = await Project.findOne({team: team});
 
         if (myProject && project._id.equals(myProject._id)){
             throw {

@@ -19,7 +19,7 @@ const projectSchema = mongoose.Schema({
         required: [true, 'Please include repository.']
     },
 
-    teamId: {
+    team: {
         type: o,
         ref: "Team",
         required: [true, 'Please include team.'],
