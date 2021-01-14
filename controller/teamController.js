@@ -133,7 +133,10 @@ exports.joinTeam = async req =>
     const team = await Team.findById(teamId);
     if (team.private && teamCode != team.teamCode)
     {
-        throw Error("Unauthorized.");
+        throw {
+            message: "Unauthorized.",
+            status: 401,
+        }
     }
 
     team.members.push(myId);
@@ -144,7 +147,6 @@ exports.joinTeam = async req =>
 
 exports.editTeam = async req =>
 {
-
     const myId = req.userData._id;
 
     let body = _.clone(req.body);
