@@ -344,7 +344,27 @@ exports.putAWSVerificationStatus = async req => {
     if (!await Admin.userIsAdmin(myId)){
         throw genericForbidden;
     }
-
-    await AWSVerification.findByIdAndUpdate(awsId, { status, adminId: myId });
+    const awsVerification = await AWSVerification.findById(awsId);
+    if (!awsVerification){
+        throw {
+            message: 'AWS Verification not exist',
+            error: 404
+        }
+    }
+    awsVerification.status = status;
+    awsVerification.admin = myId;
+    await awsVerification.save();
+    if (status == 'success'){
+        const user = await User.findById(awsVerification.userId);
+        if (!user){
+            throw {
+                message: 'User for AWS Verification not found',
+                error: 404
+            }
+        }
+        user.verified = true;
+        await user.save();
+    }
+    
 }
 
