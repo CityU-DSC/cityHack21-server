@@ -43,7 +43,6 @@ adminSchema.pre(['find', 'findOne'], async function (next)
 })
 
 adminSchema.statics.userIsAdmin = async userId => {
-	console.log(await Admin.find());
 	if (await Admin.findOne({user: userId})){
 		return true;
 	} else {

@@ -14,6 +14,8 @@ projectRouter
 
 	.post('/create', auth(), rh(projectController.createProject))
 	.put('/edit', auth(), rh(projectController.editProject))
+	
+	.put('/status', auth(), rh(projectController.setProjectStatus))
 ;
 
 

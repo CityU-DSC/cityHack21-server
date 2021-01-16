@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const { copyFilter } = require('../util/lodashUtil');
 const Project = require('../model/Project');
+const Admin = require('../model/Admin');
 const User = require('../model/User');
 const Team = require('../model/Team');
 
@@ -175,4 +176,18 @@ exports.toggleProjectVote = async req =>
 
     await user.save();
     await project.save();
+}
+
+exports.setProjectStatus = async req => {
+    let myId = req.userData._id;
+    let { projectId, status } = req.body;
+
+    if (!await Admin.userIsAdmin(myId)){
+        throw {
+            message: 'Forbidden.',
+            status: 403
+        };
+    }
+
+    await Project.findByIdAndUpdate(projectId, { status });
 }

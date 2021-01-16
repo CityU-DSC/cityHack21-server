@@ -323,7 +323,7 @@ exports.userReferrerCount = async req => {
     return { 'referrers' :  users};
 }
 
-const genricForbidden = {
+const genericForbidden = {
     message: 'Forbidden.',
     status: 403
 };
@@ -332,7 +332,7 @@ exports.getAllAWSVerification = async req => {
     const myId = req.userData._id;
     console.log(myId);
     if (!await Admin.userIsAdmin(myId)){
-        throw genricForbidden;
+        throw genericForbidden;
     }
     return { awsVerifications: await AWSVerification.find() };
 }
@@ -342,7 +342,7 @@ exports.putAWSVerificationStatus = async req => {
     const { awsId, status } = req.body;
 
     if (!await Admin.userIsAdmin(myId)){
-        throw genricForbidden;
+        throw genericForbidden;
     }
 
     await AWSVerification.findByIdAndUpdate(awsId, { status, adminId: myId });
