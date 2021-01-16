@@ -1,4 +1,5 @@
 const User = require("../model/User");
+const Admin = require("../model/Admin");
 const _ = require('lodash');
 const AWSVerification = require("../model/AWSVerification");
 const crypto = require('crypto');
@@ -320,5 +321,30 @@ exports.userReferrerCount = async req => {
     })
     
     return { 'referrers' :  users};
+}
+
+const genricForbidden = {
+    message: 'Forbidden.',
+    status: 403
+};
+
+exports.getAllAWSVerification = async req => {
+    const myId = req.userData._id;
+    console.log(myId);
+    if (!await Admin.userIsAdmin(myId)){
+        throw genricForbidden;
+    }
+    return { awsVerifications: await AWSVerification.find() };
+}
+
+exports.putAWSVerificationStatus = async req => {
+    const myId = req.userData._id;
+    const { awsId, status } = req.body;
+
+    if (!await Admin.userIsAdmin(myId)){
+        throw genricForbidden;
+    }
+
+    await AWSVerification.findByIdAndUpdate(awsId, { status, adminId: myId });
 }
 
