@@ -123,6 +123,12 @@ exports.searchTeam = async (req) =>
         {
             delete team['teamCode'];
         }
+        for (let member of team.members){
+            delete member.password;
+            delete member.verificationToken;
+            delete member.tokens;
+            delete member.__v;
+        }
     }
     return { teams: results }
 }
@@ -186,10 +192,18 @@ exports.editTeam = async req =>
         }
 
     }
+
+    const team = await Team.findOne({
+        leader: myId
+    }).populate(['leader', 'members'])
+    for (let member of team.members){
+        delete member.password;
+        delete member.verificationToken;
+        delete member.tokens;
+        delete member.__v;
+    }
     return {
-        team: await Team.findOne({
-            leader: myId
-        }).populate(['leader', 'members'])
+        team
     }
 }
 
