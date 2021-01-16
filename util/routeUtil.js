@@ -1,4 +1,18 @@
 
+const forbiddenList = ['password', 'tokens'];
+
+function clearFields(obj){
+    if (obj instanceof Object){
+        for (let key in obj){
+            if (forbiddenList.includes(key)){
+                delete obj[key];
+            } else {
+                clearFields(obj[key]);
+            }
+        }
+    }
+}
+
 function requestHandler(executionFunction) {
     return async function(req,res,next) {
 		try
@@ -10,6 +24,8 @@ function requestHandler(executionFunction) {
 				response = { result: response }
 			}
             response.success = true;
+            response = JSON.parse(JSON.stringify(response));
+            clearFields(response);
             return res.status(response.status? response.status: 200).json(response);
 		} catch (err) {
             if (err.message){
