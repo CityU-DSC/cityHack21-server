@@ -334,7 +334,7 @@ exports.getAllAWSVerification = async req => {
     if (!await Admin.userIsAdmin(myId)){
         throw genericForbidden;
     }
-    return { awsVerifications: await AWSVerification.find() };
+    return { awsVerifications: await AWSVerification.find().populate('userId') };
 }
 
 exports.putAWSVerificationStatus = async req => {
