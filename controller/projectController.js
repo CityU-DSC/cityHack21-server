@@ -55,13 +55,28 @@ exports.createProject = async req => {
         throw new Error('Project has already created.');
     }
 
-    const project = new Project(body);
+    let project = new Project(body);
     await project.save();
 
-    return { project: await Project.findById(project._id).populate({
+    project = await Project.findById(project._id).populate({
         path: 'team',
         populate: ['leader', 'members']
-    }) };
+    });
+    if (project.team){
+        const team = project.team;
+        for (let member of team.members){
+            delete member.password;
+            delete member.verificationToken;
+            delete member.tokens;
+            delete member.__v;
+        }
+        delete team.leader.password;
+        delete team.leader.verificationToken;
+        delete team.leader.tokens;
+        delete team.leader.__v;
+    }
+
+    return { project };
 }
 
 exports.project = async req => {
@@ -71,8 +86,21 @@ exports.project = async req => {
     });
     if (project) {
         project.voted = false;
+        if (project.team){
+            const team = project.team;
+            for (let member of team.members){
+                delete member.password;
+                delete member.verificationToken;
+                delete member.tokens;
+                delete member.__v;
+            }
+            delete team.leader.password;
+            delete team.leader.verificationToken;
+            delete team.leader.tokens;
+            delete team.leader.__v;
+        }
     }
-    return { project: project };
+    return { project };
 }
 
 exports.projects = async req => {
@@ -84,6 +112,19 @@ exports.projects = async req => {
 
     for (let project of projects){
         project.voted = false;
+        if (project.team){
+            const team = project.team;
+            for (let member of team.members){
+                delete member.password;
+                delete member.verificationToken;
+                delete member.tokens;
+                delete member.__v;
+            }
+            delete team.leader.password;
+            delete team.leader.verificationToken;
+            delete team.leader.tokens;
+            delete team.leader.__v;
+        }
     }
 
     if (req.userdata) {

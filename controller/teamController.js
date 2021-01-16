@@ -15,7 +15,7 @@ exports.createTeam = async (req) =>
     body['leader'] = req.userData._id
     body['members'] = [req.userData._id]
 
-    const team = new Team(body);
+    let team = new Team(body);
 
 
     try
@@ -39,8 +39,19 @@ exports.createTeam = async (req) =>
         }
 
     }
+    team = await Team.findById(team._id).populate(['leader', 'members']);
 
-    return { team: await Team.findById(team._id).populate(['leader', 'members']) };
+    for (let member of team.members){
+        delete member.password;
+        delete member.verificationToken;
+        delete member.tokens;
+        delete member.__v;
+    }
+    delete team.leader.password;
+    delete team.leader.verificationToken;
+    delete team.leader.tokens;
+    delete team.leader.__v;
+    return { team };
 }
 
 
@@ -129,10 +140,10 @@ exports.searchTeam = async (req) =>
             delete member.tokens;
             delete member.__v;
         }
-        delete leader.password;
-        delete leader.verificationToken;
-        delete leader.tokens;
-        delete leader.__v;
+        delete team.leader.password;
+        delete team.leader.verificationToken;
+        delete team.leader.tokens;
+        delete team.leader.__v;
     }
     return { teams: results }
 }
@@ -206,6 +217,10 @@ exports.editTeam = async req =>
         delete member.tokens;
         delete member.__v;
     }
+    delete team.leader.password;
+    delete team.leader.verificationToken;
+    delete team.leader.tokens;
+    delete team.leader.__v;
     return {
         team
     }
@@ -219,6 +234,17 @@ exports.getMyTeam = async req =>
             members: { $elemMatch: { $eq: myId } }
         }
     ).populate(['leader', 'members']);
+
+    for (let member of team.members){
+        delete member.password;
+        delete member.verificationToken;
+        delete member.tokens;
+        delete member.__v;
+    }
+    delete team.leader.password;
+    delete team.leader.verificationToken;
+    delete team.leader.tokens;
+    delete team.leader.__v;
     return { team }
 
 }
