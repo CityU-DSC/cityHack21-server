@@ -129,6 +129,10 @@ exports.searchTeam = async (req) =>
             delete member.tokens;
             delete member.__v;
         }
+        delete leader.password;
+        delete leader.verificationToken;
+        delete leader.tokens;
+        delete leader.__v;
     }
     return { teams: results }
 }
