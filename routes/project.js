@@ -10,10 +10,12 @@ projectRouter
 	.get('/me', auth(), rh(projectController.project))
 	.get('/all', auth(false),rh(projectController.projects))
 
-	// .put('/toggleVote', auth(), rh(projectController.toggleProjectVote))
+	.put('/toggleVote', auth(), rh(projectController.toggleProjectVote))
 
-	// .post('/create', auth(), rh(projectController.createProject))
-	// .put('/edit', auth(), rh(projectController.editProject))
+	.post('/create', auth(), rh(projectController.createProject))
+	.put('/edit', auth(), rh(projectController.editProject))
+	
+	.put('/status', auth(), rh(projectController.setProjectStatus))
 ;
 
 

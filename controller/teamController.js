@@ -90,7 +90,7 @@ exports.searchTeam = async (req) =>
 
     if (teamLeaderAccountId)
     {
-        const user = await User.findOne({accountId: { $regex: '.*' + teamLeaderAccountId.split(' ').join('.*') + '.*', $options: 'i' }});
+        const user = await User.findOne({ accountId: { $regex: '.*' + teamLeaderAccountId.split(' ').join('.*') + '.*', $options: 'i' } });
         query['leader'] = user;
     }
 
@@ -111,14 +111,16 @@ exports.searchTeam = async (req) =>
     let results = await Team.find(query).populate(['leader', 'members']);
     results = results.map(result => result.toJSON());
 
-    for (let team of results){
+    for (let team of results)
+    {
         if (
-            !req.userData || 
+            !req.userData ||
             team.members
                 .map(m => m._id)
                 .filter(m => m._id.equals(req.userData._id))
                 .length == 0
-        ){
+        )
+        {
             delete team['teamCode'];
         }
     }
@@ -159,8 +161,9 @@ exports.editTeam = async req =>
                 leader: myId
             }
         );
-        
-        for (let key in body ){
+
+        for (let key in body)
+        {
             team[key] = body[key];
         }
 
@@ -183,9 +186,11 @@ exports.editTeam = async req =>
         }
 
     }
-    return { team: await Team.findOne({
-        leader: myId
-    }).populate(['leader', 'members']) }
+    return {
+        team: await Team.findOne({
+            leader: myId
+        }).populate(['leader', 'members'])
+    }
 }
 
 exports.getMyTeam = async req =>
@@ -197,5 +202,40 @@ exports.getMyTeam = async req =>
         }
     ).populate(['leader', 'members']);
     return { team }
+
+}
+exports.kickMember = async req =>
+{
+    const myId = req.userData._id;
+    const { kickMemberId } = req.body;
+    const team = await Team.findOne({ leader: myId });
+
+    if (!team)
+    {
+        throw {
+            message: "You are not in any team or you are not the leader.",
+            status: 404,
+        };
+    } else
+    {
+        if (myId == kickMemberId) {
+            throw {
+                message: "You cannot kick yourself.",
+                status: 403,
+            };
+        }
+        let tmp = team.members.filter(member => !member.equals(kickMemberId));
+        if (tmp.length == team.members.length){
+            throw {
+                message: "Member not found in team.",
+                status: 404,
+            };
+        }
+        team.members = tmp;
+
+        await team.save();
+
+        await User.findByIdAndUpdate(kickMemberId, { team: null });
+    }
 
 }

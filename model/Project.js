@@ -31,6 +31,7 @@ const projectSchema = mongoose.Schema({
     tech: [String],
 
     votes: { type: Number, default: 0},
+    status: { type: String, default: 'all' },
 
     created_at: {type: Date, default: Date.now},
     updated_at: {type: Date, default: Date.now}

@@ -23,6 +23,10 @@ userRouter.post('/forgetPassword', requestHandler(userController.forgetPassword)
 userRouter.get('/referrerCounts', requestHandler(userController.userReferrerCount))
 userRouter.get('/awsVerifications', auth(), requestHandler(userController.getAWSVerifications))
 
+
+userRouter.get('/awsVerification/all', auth(), requestHandler(userController.getAllAWSVerification))
+userRouter.put('/awsVerification/status', auth(), requestHandler(userController.putAWSVerificationStatus))
+
 // Admin Api
 userRouter.get('/listAllUsers', userController.listAllUsers);
 

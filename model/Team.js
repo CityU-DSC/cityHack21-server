@@ -24,7 +24,6 @@ const teamSchema = mongoose.Schema({
 
 teamSchema.pre("save", async function (next)
 {
-	// Hash the password before saving the user model
 	const now = new Date();
 	this.updated_at = now;
 	if (!this.created_at) this.created_at = now;

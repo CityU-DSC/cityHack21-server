@@ -1,4 +1,5 @@
 const User = require("../model/User");
+const Admin = require("../model/Admin");
 const _ = require('lodash');
 const AWSVerification = require("../model/AWSVerification");
 const crypto = require('crypto');
@@ -320,5 +321,50 @@ exports.userReferrerCount = async req => {
     })
     
     return { 'referrers' :  users};
+}
+
+const genericForbidden = {
+    message: 'Forbidden.',
+    status: 403
+};
+
+exports.getAllAWSVerification = async req => {
+    const myId = req.userData._id;
+    console.log(myId);
+    if (!await Admin.userIsAdmin(myId)){
+        throw genericForbidden;
+    }
+    return { awsVerifications: await AWSVerification.find().populate(['userId', 'admin']) };
+}
+
+exports.putAWSVerificationStatus = async req => {
+    const myId = req.userData._id;
+    const { awsId, status } = req.body;
+
+    if (!await Admin.userIsAdmin(myId)){
+        throw genericForbidden;
+    }
+    const awsVerification = await AWSVerification.findById(awsId);
+    if (!awsVerification){
+        throw {
+            message: 'AWS Verification not exist',
+            error: 404
+        }
+    }
+    awsVerification.status = status;
+    awsVerification.admin = myId;
+    await awsVerification.save();
+    if (status == 'success'){
+        const user = await User.findById(awsVerification.userId);
+        if (!user){
+            throw {
+                message: 'User for AWS Verification not found',
+                error: 404
+            }
+        }
+        user.verified = true;
+        await user.save();
+    }
+    
 }
 
