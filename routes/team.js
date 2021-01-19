@@ -17,6 +17,7 @@ teamRouter
 
 	// .put('/tooglePrivate', auth, requestHandler(teamController.toogleTeamPrivate))
 	.put('/edit', auth(), requestHandler(teamController.editTeam))
+	.put('/kickMember', auth(), requestHandler(teamController.kickMember))
 	;
 
 

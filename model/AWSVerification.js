@@ -1,10 +1,11 @@
 const mongoose = require("mongoose");
 
+const o = mongoose.Schema.Types.ObjectId;
 const AWSVerificationSchema = mongoose.Schema({
 
     userId: {
         ref: "User",
-        type: mongoose.Schema.Types.ObjectId,
+        type: o,
         required: [true, "Please include user id"]
     },
     
@@ -18,14 +19,16 @@ const AWSVerificationSchema = mongoose.Schema({
         required: [true, "Please include imageUrl"]
     },
 
-    // adminId: {}
+    admin: {
+        type: o,
+        ref: "User"
+    },
 
     created_at: {type: Date, default: Date.now},
     updated_at: {type: Date, default: Date.now}
 });
 
 AWSVerificationSchema.pre("save", async function(next) {
-    // Hash the password before saving the user model
     now = new Date();
     this.updated_at = now;
     if(!this.created_at) this.created_at = now;
