@@ -211,34 +211,34 @@ userSchema.statics.findByCredentials = async (email, password) =>
 
 userSchema.statics.sendAWSEducateReminderEmails = async (email, password) =>
 {
-    const users = await User.find({ verified: false });
-    for (let user of users)
-    {
-        if (
-            (
-                [3, 7, 14, 21].indexOf(
-                    parseInt(
-                        dateUtil.dateToDay(new Date()) -
-                        dateUtil.dateToDay(user.created_at)
-                    )
-                ) != -1
-            ) || (
-                [7, 3, 1].indexOf(
-                    parseInt(
-                        dateUtil.dateToDay(dateUtil.hackathonDate) -
-                        dateUtil.dateToDay(new Date())
-                    )
-                ) != -1
-            )
-        )
-        {
-            await emailController.sendAWSReminderEmail(
-                [user.email, user.schoolEmail].filter(x => x),
-                user.nickName,
-                user.created_at
-            );
-        }
-    }
+    // const users = await User.find({ verified: false });
+    // for (let user of users)
+    // {
+    //     if (
+    //         (
+    //             [3, 7, 14, 21].indexOf(
+    //                 parseInt(
+    //                     dateUtil.dateToDay(new Date()) -
+    //                     dateUtil.dateToDay(user.created_at)
+    //                 )
+    //             ) != -1
+    //         ) || (
+    //             [7, 3, 1].indexOf(
+    //                 parseInt(
+    //                     dateUtil.dateToDay(dateUtil.hackathonDate) -
+    //                     dateUtil.dateToDay(new Date())
+    //                 )
+    //             ) != -1
+    //         )
+    //     )
+    //     {
+    //         await emailController.sendAWSReminderEmail(
+    //             [user.email, user.schoolEmail].filter(x => x),
+    //             user.nickName,
+    //             user.created_at
+    //         );
+    //     }
+    // }
 }
 
 userSchema.statics.findByAccountId = async accountId =>
