@@ -86,7 +86,7 @@ exports.loginUser = async (req, res) =>
 
 exports.getUserDetails = async (req, res) =>
 {
-    const user = await User.findById(req.userData._id);
+    const user = await User.findById(req.userData._id).populate('referrer');
     return res.status(200).json(user);
 };
 
@@ -105,25 +105,52 @@ exports.updateUserDetails = async (req, res) => {
     }
 
     if(body.referrerAccountId){
-        body.referrer = await User.findByAccountId(body.referrerAccountId);
+        const referrer = await User.findByAccountId(body.referrerAccountId);
+        if (referrer){
+            body.referrer = referrer // this key if exist cannot be null;
+        } else {
+            return res.status(400).json(
+                {
+                    success: true,
+                    message: "Referrer not found."
+                }
+            );
+        } 
     }
 
     if (!req.userData){
         return res.status(400).json(
             {
                 success: true,
-                error: "Not logged in"
+                message: "Not logged in"
             }
         )
     }
 
     const user = await User.findById(req.userData._id);
 
+    if (user && body.referrer && user.referrer && !body.referrer._id.equals(user.referrer._id)){
+        return res.status(403).json(
+            {
+                success: true,
+                message: 'You can only set referrer once'
+            }
+        )
+    }
+    if (body.referrer && new Date(body.referrer.created_at) >= new Date(user.created_at)){
+        return res.status(403).json(
+            {
+                success: true,
+                message: 'Referrer cannot register later than you.'
+            }
+        )
+    }
+
     if (!user) {
         return res.status(404).json(
             {
                 success: true,
-                error: "User not exist"
+                message: "User not exist"
             }
         )
     } else {
@@ -131,7 +158,6 @@ exports.updateUserDetails = async (req, res) => {
         for (let key in body){
             user[key] = body[key]
         }
-
         await user.save();
     }
     return res.status(200).json({success: true});
