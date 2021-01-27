@@ -38,7 +38,7 @@ function requestHandler(executionFunction) {
                 error: err,
                 message: err.message
             })
-            throw err;
+            // throw err;
 		}
 	}
 }
