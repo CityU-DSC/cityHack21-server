@@ -126,7 +126,6 @@ userSchema.pre("save", async function (next)
     // Hash the password before saving the user model
     now = new Date();
     this.updated_at = now;
-    if (!this.created_at) this.created_at = now;
     const user = this;
     if (user.isModified("password"))
     {
@@ -135,16 +134,17 @@ userSchema.pre("save", async function (next)
     if (user.isModified('referrer')){
 
         const user2 = await User.findById(user.referrer).select('referrerCount');
+
+        const user1 = await User.findById(user._referrer).select('referrerCount')
+        
         if (user2){
             user2.referrerCount += 1;
             await user2.save();
-        }
-
-        const user1 = await User.findById(user._referrer).select('referrerCount');
+        };
         if (user1){
             user1.referrerCount -= 1;
             await user1.save();
-        }
+        };
     }
     next();
 });
@@ -215,34 +215,34 @@ userSchema.statics.findByCredentials = async (email, password) =>
 
 userSchema.statics.sendAWSEducateReminderEmails = async (email, password) =>
 {
-    const users = await User.find({ verified: false });
-    for (let user of users)
-    {
-        if (
-            (
-                [3, 7, 14, 21].indexOf(
-                    parseInt(
-                        dateUtil.dateToDay(new Date()) -
-                        dateUtil.dateToDay(user.created_at)
-                    )
-                ) != -1
-            ) || (
-                [7, 3, 1].indexOf(
-                    parseInt(
-                        dateUtil.dateToDay(dateUtil.hackathonDate) -
-                        dateUtil.dateToDay(new Date())
-                    )
-                ) != -1
-            )
-        )
-        {
-            await emailController.sendAWSReminderEmail(
-                [user.email, user.schoolEmail].filter(x => x),
-                user.nickName,
-                user.created_at
-            );
-        }
-    }
+    // const users = await User.find({ verified: false });
+    // for (let user of users)
+    // {
+    //     if (
+    //         (
+    //             [3, 7, 14, 21].indexOf(
+    //                 parseInt(
+    //                     dateUtil.dateToDay(new Date()) -
+    //                     dateUtil.dateToDay(user.created_at)
+    //                 )
+    //             ) != -1
+    //         ) || (
+    //             [7, 3, 1].indexOf(
+    //                 parseInt(
+    //                     dateUtil.dateToDay(dateUtil.hackathonDate) -
+    //                     dateUtil.dateToDay(new Date())
+    //                 )
+    //             ) != -1
+    //         )
+    //     )
+    //     {
+    //         await emailController.sendAWSReminderEmail(
+    //             [user.email, user.schoolEmail].filter(x => x),
+    //             user.nickName,
+    //             user.created_at
+    //         );
+    //     }
+    // }
 }
 
 userSchema.statics.findByAccountId = async accountId =>
