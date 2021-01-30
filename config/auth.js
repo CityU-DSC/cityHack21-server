@@ -1,6 +1,8 @@
 const jwt = require("jsonwebtoken");
+
+const User = require('../model/User')
 module.exports = (raiseError=true) => {
-    return (req, res, next) => {
+    return async (req, res, next) => {
         try {
             const token = req.headers.authorization? req.headers.authorization.replace("Bearer ", ""): '';
             if (!token && raiseError){
@@ -9,6 +11,10 @@ module.exports = (raiseError=true) => {
                 return next();
             }
             const decoded = jwt.verify(token, "secret");
+            const userData = await User.findById(decoded._id);
+            if (!userData.tokens.map(x => x.token).includes(token)){
+                throw "Auth failed";
+            }
             req.userData = decoded;
     
             return next();
