@@ -15,8 +15,7 @@ const projectSchema = mongoose.Schema({
     },
 
     repositoryUrl: {
-        type: String,
-        required: [true, 'Please include repository.']
+        type: String
     },
 
     team: {
