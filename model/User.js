@@ -51,7 +51,7 @@ const userSchema = mongoose.Schema({
 
     number: {
         type: String,
-        required: [true, 'Please include your academic year information']
+        required: [true, 'Please include your phone number for communication']
     },
     schoolEmail: {
         type: String,
