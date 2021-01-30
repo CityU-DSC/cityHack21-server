@@ -11,7 +11,6 @@ const projectSchema = mongoose.Schema({
     },
     logoUrl: {
         type: String,
-        required: [true, 'Please include logo Image.']
     },
 
     repositoryUrl: {
@@ -25,8 +24,14 @@ const projectSchema = mongoose.Schema({
         unique: true,
     },
 
-    description: String,
-    motivation: String,
+    description: {
+        type: String,
+        required: [true, 'Please include project description'],
+    },
+    motivation: {
+        type: String,
+        required: [true, 'Please include project motivation'],
+    },
     tech: [String],
 
     votes: { type: Number, default: 0},
