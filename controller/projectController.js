@@ -148,7 +148,7 @@ exports.editProject = async req => {
     const body = copyFilter(req.body, [
         'pdfUrl', 'repositoryUrl',
         'description', 'motivation',
-        'tech', 'name'
+        'tech', 'name', 'logoUrl'
     ]);
     const team = await findTeam(req, true);
     const project = await Project.findOne({ team: team });
